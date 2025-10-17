@@ -4,8 +4,8 @@ from pathlib import Path
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
-from app.database import engine, Base
-from app.routes import router
+from app.db import engine, Base
+from app.api import router
 from app.logger import setup_logging, get_logger
 from app.redis_client import redis_client
 from config import settings, ensure_directories

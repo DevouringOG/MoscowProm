@@ -2,7 +2,8 @@
 from typing import Optional, List
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from app import models, schemas
+from app.db import models
+from app.api import schemas
 
 
 def get_organization(db: Session, organization_id: int) -> Optional[models.Organization]:

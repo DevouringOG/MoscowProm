@@ -3,8 +3,9 @@ from datetime import datetime
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from app import crud, schemas
-from app.database import get_db
+from app.db import crud
+from app.api import schemas
+from app.db import get_db
 from app.redis_client import redis_client
 from app.logger import get_logger
 
