@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Список организаций - MosProm</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: white;
+            color: #667eea;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .search-section {
+            padding: 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .search-container {
+            display: flex;
+            gap: 15px;
+            max-width: 600px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 12px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn-search {
+            background: #667eea;
+            color: white;
+            padding: 12px 30px;
+        }
+
+        .btn-search:hover {
+            background: #5568d3;
+        }
+
+        .stats {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        .table-container {
+            padding: 30px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #f8f9fa;
+        }
+
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #495057;
+            border-bottom: 2px solid #dee2e6;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        tbody tr {
+            transition: background-color 0.2s ease;
+        }
+
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .org-name {
+            font-weight: 600;
+            color: #667eea;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .org-name:hover {
+            color: #5568d3;
+            text-decoration: underline;
+        }
+
+        .inn-badge {
+            background: #e7f3ff;
+            color: #0066cc;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            font-family: 'Courier New', monospace;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .pagination {
+            padding: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .page-btn {
+            padding: 8px 16px;
+            border: 1px solid #dee2e6;
+            background: white;
+            color: #495057;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .page-btn:hover:not(.active):not(:disabled) {
+            background: #f8f9fa;
+            border-color: #667eea;
+        }
+
+        .page-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 30px;
+            color: #6c757d;
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        .empty-state h2 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .empty-state p {
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Реестр промышленных предприятий</h1>
+            <div class="header-buttons">
+                <a href="/" class="btn btn-secondary">🏠 Главная</a>
+                <a href="/upload" class="btn btn-primary">📤 Загрузить данные</a>
+            </div>
+        </div>
+
+        <div class="search-section">
+            <form action="/organizations" method="get" class="search-container">
+                <input 
+                    type="text" 
+                    name="search" 
+                    class="search-input" 
+                    placeholder="Поиск по названию или ИНН..." 
+                    value="{{ search }}"
+                >
+                <button type="submit" class="btn btn-search">🔍 Найти</button>
+            </form>
+        </div>
+
+        <div class="stats">
+            Всего организаций: <strong>{{ total }}</strong>
+            {% if search %}
+            | Результаты поиска: <strong>{{ search }}</strong>
+            <a href="/organizations" style="margin-left: 10px; color: #667eea;">✕ Сбросить</a>
+            {% endif %}
+        </div>
+
+        <div class="table-container">
+            {% if organizations %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Название</th>
+                        <th>ИНН</th>
+                        <th>Отрасль</th>
+                        <th>Статус</th>
+                        <th>Район</th>
+                        <th>Размер</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for org in organizations %}
+                    <tr>
+                        <td>
+                            <a href="/organizations/{{ org.id }}" class="org-name">
+                                {{ org.name }}
+                            </a>
+                        </td>
+                        <td>
+                            <span class="inn-badge">{{ org.inn }}</span>
+                        </td>
+                        <td>{{ org.main_industry or '—' }}</td>
+                        <td>
+                            <span class="status-badge status-active">
+                                {{ org.status_final or org.status_spark or 'Активно' }}
+                            </span>
+                        </td>
+                        <td>{{ org.region or org.district or '—' }}</td>
+                        <td>{{ org.company_size or org.company_size_2022 or '—' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">📭</div>
+                <h2>Организации не найдены</h2>
+                <p>
+                    {% if search %}
+                    По запросу "{{ search }}" ничего не найдено. Попробуйте изменить условия поиска.
+                    {% else %}
+                    База данных пуста. Загрузите Excel файл с данными организаций.
+                    {% endif %}
+                </p>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if total_pages > 1 %}
+        <div class="pagination">
+            {% if page > 1 %}
+            <a href="/organizations?page={{ page - 1 }}{% if search %}&search={{ search }}{% endif %}" class="page-btn">← Назад</a>
+            {% else %}
+            <button class="page-btn" disabled>← Назад</button>
+            {% endif %}
+
+            {% for p in range(1, total_pages + 1) %}
+                {% if p == page %}
+                <span class="page-btn active">{{ p }}</span>
+                {% elif p == 1 or p == total_pages or (p >= page - 2 and p <= page + 2) %}
+                <a href="/organizations?page={{ p }}{% if search %}&search={{ search }}{% endif %}" class="page-btn">{{ p }}</a>
+                {% elif p == page - 3 or p == page + 3 %}
+                <span class="page-btn" disabled>...</span>
+                {% endif %}
+            {% endfor %}
+
+            {% if page < total_pages %}
+            <a href="/organizations?page={{ page + 1 }}{% if search %}&search={{ search }}{% endif %}" class="page-btn">Вперёд →</a>
+            {% else %}
+            <button class="page-btn" disabled>Вперёд →</button>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
