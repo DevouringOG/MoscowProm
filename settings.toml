@@ -1,0 +1,63 @@
+[default]
+# Application settings
+app_name = "Industrial Data Moscow"
+app_version = "0.1.0"
+debug = true
+host = "0.0.0.0"
+port = 8000
+
+# Database settings
+[default.database]
+host = "localhost"
+port = 5432
+name = "mosprom_db"
+user = "mosprom_user"
+password = "mosprom_password"
+echo = false
+pool_size = 5
+max_overflow = 10
+
+# Redis settings
+[default.redis]
+host = "localhost"
+port = 6379
+db = 0
+decode_responses = true
+cache_ttl = 3600        # 1 hour in seconds
+
+# Logging settings
+[default.logging]
+level = "INFO"
+log_dir = "logs"
+log_file = "mosprom.log"
+log_format = "json"
+log_to_console = true
+log_to_file = true
+
+# File upload settings
+[default.upload]
+max_file_size = 10485760               # 10MB in bytes
+allowed_extensions = [".xlsx", ".xls"]
+upload_dir = "uploads"
+
+# Pagination settings
+[default.pagination]
+default_page_size = 50
+max_page_size = 1000
+
+# Production settings (override when needed)
+[production]
+debug = false
+
+[production.logging]
+level = "WARNING"
+
+# Development settings
+[development]
+debug = true
+
+[development.database]
+echo = true
+
+[development.logging]
+level = "DEBUG"
