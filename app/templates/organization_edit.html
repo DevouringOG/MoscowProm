@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Редактирование: {{ org.name }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .header .breadcrumb {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .header .breadcrumb a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .header .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .form-card {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: #f8f9fa;
+            border: 2px solid transparent;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .tab:hover {
+            background: #e9ecef;
+        }
+
+        .tab.active {
+            background: white;
+            border-color: #667eea;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+        }
+
+        .form-section h3 {
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            color: #555;
+            font-size: 14px;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="email"],
+        .form-group input[type="number"],
+        .form-group input[type="date"],
+        .form-group textarea {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .success-message,
+        .error-message {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tabs {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✏️ Редактирование: {{ org.name }}</h1>
+            <div class="breadcrumb">
+                <a href="/">Главная</a> / 
+                <a href="/organizations">Организации</a> / 
+                <a href="/organizations/{{ org.id }}">{{ org.name }}</a> /
+                Редактирование
+            </div>
+            <div class="action-buttons">
+                <a href="/organizations/{{ org.id }}" class="btn btn-secondary">
+                    ← Отмена
+                </a>
+                <button type="button" onclick="saveChanges()" class="btn btn-primary">
+                    💾 Сохранить изменения
+                </button>
+            </div>
+        </div>
+
+        <div class="success-message" id="successMessage">
+            Изменения успешно сохранены!
+        </div>
+
+        <div class="error-message" id="errorMessage">
+            Ошибка при сохранении изменений.
+        </div>
+
+        <div class="form-card">
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('general')">📋 Общая информация</div>
+                <div class="tab" onclick="switchTab('addresses')">📍 Адреса</div>
+                <div class="tab" onclick="switchTab('industry')">🏭 Отрасль и ОКВЭД</div>
+                <div class="tab" onclick="switchTab('size')">📊 Размер компании</div>
+                <div class="tab" onclick="switchTab('contacts')">📞 Контакты</div>
+            </div>
+
+            <form id="editForm">
+                <!-- Общая информация -->
+                <div id="general" class="tab-content active">
+                    <div class="form-section">
+                        <h3>Основные данные</h3>
+                        <div class="form-grid">
+                            <div class="form-group full-width">
+                                <label for="name">Наименование *</label>
+                                <input type="text" id="name" name="name" value="{{ org.name or '' }}" required>
+                            </div>
+                            <div class="form-group full-width">
+                                <label for="full_name">Полное наименование</label>
+                                <input type="text" id="full_name" name="full_name" value="{{ org.full_name or '' }}">
+                            </div>
+                            <div class="form-group">
+                                <label for="inn">ИНН *</label>
+                                <input type="text" id="inn" name="inn" value="{{ org.inn or '' }}" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="registration_date">Дата регистрации</label>
+                                <input type="date" id="registration_date" name="registration_date" value="{{ org.registration_date or '' }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>Статусы</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="status_spark">Статус Spark</label>
+                                <input type="text" id="status_spark" name="status_spark" value="{{ org.status_spark or '' }}">
+                            </div>
+                            <div class="form-group">
+                                <label for="status_internal">Внутренний статус</label>
+                                <input type="text" id="status_internal" name="status_internal" value="{{ org.status_internal or '' }}">
+                            </div>
+                            <div class="form-group">
+                                <label for="status_final">Финальный статус</label>
+                                <input type="text" id="status_final" name="status_final" value="{{ org.status_final or '' }}">
+                            </div>
+                            <div class="form-group">
+                                <label for="msp_status">Статус МСП</label>
+                                <input type="text" id="msp_status" name="msp_status" value="{{ org.msp_status or '' }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>Дополнительно</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="got_moscow_support" name="got_moscow_support" 
+                                           {% if org.got_moscow_support %}checked{% endif %}>
+                                    <label for="got_moscow_support">Получала поддержку Москвы</label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="is_system_critical" name="is_system_critical"
+                                           {% if org.is_system_critical %}checked{% endif %}>
+                                    <label for="is_system_critical">Системообразующая</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Адреса -->
+                <div id="addresses" class="tab-content">
+                    <div class="form-section">
+                        <h3>Юридический адрес</h3>
+                        <div class="form-grid">
+                            <div class="form-group full-width">
+                                <label for="legal_address">Адрес</label>
+                                <textarea id="legal_address" name="legal_address">{{ org.legal_address or '' }}</textarea>
+                            </div>
+                            <div class="form-group full-width">
+                                <label for="legal_address_coords">Координаты</label>
+                                <input type="text" id="legal_address_coords" name="legal_address_coords" 
+                                       value="{{ org.legal_address_coords or '' }}" placeholder="55.7558, 37.6173">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>Адрес производства</h3>
+                        <div class="form-grid">
+                            <div class="form-group full-width">
+                                <label for="production_address">Адрес</label>
+                                <textarea id="production_address" name="production_address">{{ org.production_address or '' }}</textarea>
+                            </div>
+                            <div class="form-group full-width">
+                                <label for="production_address_coords">Координаты</label>
+                                <input type="text" id="production_address_coords" name="production_address_coords" 
+                                       value="{{ org.production_address_coords or '' }}" placeholder="55.7558, 37.6173">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>Дополнительная площадка</h3>
+                        <div class="form-grid">
+                            <div class="form-group full-width">
+                                <label for="additional_address">Адрес</label>
+                                <textarea id="additional_address" name="additional_address">{{ org.additional_address or '' }}</textarea>
+                            </div>
+                            <div class="form-group full-width">
+                                <label for="additional_address_coords">Координаты</label>
+                                <input type="text" id="additional_address_coords" name="additional_address_coords" 
+                                       value="{{ org.additional_address_coords or '' }}" placeholder="55.7558, 37.6173">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>Локация</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="district">Округ</label>
+                                <input type="text" id="district" name="district" value="{{ org.district or '' }}">
+                            </div>
+                            <div class="form-group">
+                                <label for="region">Район</label>
+                                <input type="text" id="region" name="region" value="{{ org.region or '' }}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Отрасль и ОКВЭД -->
+                <div id="industry" class="tab-content">
+                    <div class="form-section">
+                        <h3>Основная отрасль</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="main_industry">Отрасль</label>
+                                <input type="text" id="main_industry" name="main_industry" value="{{ org.main_industry or '' }}">
+                            </div>
+                            <div class="form-group">
+                                <label for="main_subindustry">Подотрасль</label>
+                                <input type="text" id="main_subindustry" name="main_subindustry" value="{{ org.main_subindustry or '' }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>Дополнительная отрасль</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="extra_industry">Отрасль</label>
+                                <input type="text" id="extra_industry" name="extra_industry" value="{{ org.extra_industry or '' }}">
+                            </div>
+                            <div class="form-group">
+                                <label for="extra_subindustry">Подотрасль</label>
+                                <input type="text" id="extra_subindustry" name="extra_subindustry" value="{{ org.extra_subindustry or '' }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>ОКВЭД</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="main_okved">Основной ОКВЭД</label>
+                                <input type="text" id="main_okved" name="main_okved" value="{{ org.main_okved or '' }}">
+                            </div>
+                            <div class="form-group">
+                                <label for="main_okved_name">Наименование</label>
+                                <input type="text" id="main_okved_name" name="main_okved_name" value="{{ org.main_okved_name or '' }}">
+                            </div>
+                            <div class="form-group">
+                                <label for="prod_okved">ОКВЭД производства</label>
+                                <input type="text" id="prod_okved" name="prod_okved" value="{{ org.prod_okved or '' }}">
+                            </div>
+                            <div class="form-group">
+                                <label for="prod_okved_name">Наименование</label>
+                                <input type="text" id="prod_okved_name" name="prod_okved_name" value="{{ org.prod_okved_name or '' }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>Дополнительная информация</h3>
+                        <div class="form-grid">
+                            <div class="form-group full-width">
+                                <label for="company_info">Информация о компании</label>
+                                <textarea id="company_info" name="company_info">{{ org.company_info or '' }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Размер компании -->
+                <div id="size" class="tab-content">
+                    <div class="form-section">
+                        <h3>Размер компании</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="company_size">Размер компании</label>
+                                <input type="text" id="company_size" name="company_size" value="{{ org.company_size or '' }}">
+                            </div>
+                            <div class="form-group">
+                                <label for="company_size_2022">Размер компании 2022</label>
+                                <input type="text" id="company_size_2022" name="company_size_2022" value="{{ org.company_size_2022 or '' }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>По численности</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="size_by_employees">Размер по численности</label>
+                                <input type="text" id="size_by_employees" name="size_by_employees" value="{{ org.size_by_employees or '' }}">
+                            </div>
+                            <div class="form-group">
+                                <label for="size_by_employees_2022">Размер по численности 2022</label>
+                                <input type="text" id="size_by_employees_2022" name="size_by_employees_2022" value="{{ org.size_by_employees_2022 or '' }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>По выручке</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="size_by_revenue">Размер по выручке</label>
+                                <input type="text" id="size_by_revenue" name="size_by_revenue" value="{{ org.size_by_revenue or '' }}">
+                            </div>
+                            <div class="form-group">
+                                <label for="size_by_revenue_2022">Размер по выручке 2022</label>
+                                <input type="text" id="size_by_revenue_2022" name="size_by_revenue_2022" value="{{ org.size_by_revenue_2022 or '' }}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Контакты -->
+                <div id="contacts" class="tab-content">
+                    <div class="form-section">
+                        <h3>Руководство</h3>
+                        <div class="form-grid">
+                            <div class="form-group full-width">
+                                <label for="head_name">ФИО руководителя</label>
+                                <input type="text" id="head_name" name="head_name" value="{{ org.head_name or '' }}">
+                            </div>
+                            <div class="form-group">
+                                <label for="head_contacts">Контакты руководителя</label>
+                                <input type="text" id="head_contacts" name="head_contacts" value="{{ org.head_contacts or '' }}">
+                            </div>
+                            <div class="form-group">
+                                <label for="head_email">Email руководителя</label>
+                                <input type="email" id="head_email" name="head_email" value="{{ org.head_email or '' }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>Родительская организация</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="parent_org_name">Наименование</label>
+                                <input type="text" id="parent_org_name" name="parent_org_name" value="{{ org.parent_org_name or '' }}">
+                            </div>
+                            <div class="form-group">
+                                <label for="parent_org_inn">ИНН</label>
+                                <input type="text" id="parent_org_inn" name="parent_org_inn" value="{{ org.parent_org_inn or '' }}">
+                            </div>
+                            <div class="form-group">
+                                <label for="parent_relation_type">Тип связи</label>
+                                <input type="text" id="parent_relation_type" name="parent_relation_type" value="{{ org.parent_relation_type or '' }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>Контактная информация</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="employee_contact">Контакт сотрудника</label>
+                                <input type="text" id="employee_contact" name="employee_contact" value="{{ org.employee_contact or '' }}">
+                            </div>
+                            <div class="form-group">
+                                <label for="phone">Телефон</label>
+                                <input type="text" id="phone" name="phone" value="{{ org.phone or '' }}">
+                            </div>
+                            <div class="form-group">
+                                <label for="emergency_contact">Экстренный контакт</label>
+                                <input type="text" id="emergency_contact" name="emergency_contact" value="{{ org.emergency_contact or '' }}">
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Email</label>
+                                <input type="email" id="email" name="email" value="{{ org.email or '' }}">
+                            </div>
+                            <div class="form-group">
+                                <label for="website">Веб-сайт</label>
+                                <input type="text" id="website" name="website" value="{{ org.website or '' }}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+
+        async function saveChanges() {
+            const form = document.getElementById('editForm');
+            const formData = new FormData(form);
+            
+            try {
+                const response = await fetch('/organizations/{{ org.id }}/edit', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    showMessage('success', 'Изменения успешно сохранены!');
+                    
+                    // Redirect to view page after 1 second
+                    setTimeout(() => {
+                        window.location.href = '/organizations/{{ org.id }}';
+                    }, 1000);
+                } else {
+                    const error = await response.json();
+                    showMessage('error', 'Ошибка: ' + (error.detail || 'Неизвестная ошибка'));
+                }
+            } catch (error) {
+                showMessage('error', 'Ошибка при сохранении: ' + error.message);
+            }
+        }
+
+        function showMessage(type, message) {
+            const successMsg = document.getElementById('successMessage');
+            const errorMsg = document.getElementById('errorMessage');
+            
+            if (type === 'success') {
+                successMsg.textContent = message;
+                successMsg.style.display = 'block';
+                errorMsg.style.display = 'none';
+            } else {
+                errorMsg.textContent = message;
+                errorMsg.style.display = 'block';
+                successMsg.style.display = 'none';
+            }
+            
+            // Scroll to top to show message
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>

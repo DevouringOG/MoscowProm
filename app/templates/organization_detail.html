@@ -33,21 +33,41 @@
             padding: 30px;
         }
 
-        .back-btn {
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .back-btn,
+        .edit-btn,
+        .delete-btn {
             display: inline-flex;
             align-items: center;
             gap: 8px;
             color: white;
             text-decoration: none;
-            margin-bottom: 20px;
             padding: 8px 16px;
             background: rgba(255, 255, 255, 0.2);
             border-radius: 8px;
             transition: background 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
         }
 
-        .back-btn:hover {
+        .back-btn:hover,
+        .edit-btn:hover {
             background: rgba(255, 255, 255, 0.3);
+        }
+
+        .delete-btn {
+            background: rgba(220, 53, 69, 0.8);
+        }
+
+        .delete-btn:hover {
+            background: rgba(220, 53, 69, 1);
         }
 
         .org-title {
@@ -247,7 +267,11 @@
 <body>
     <div class="container">
         <div class="header">
-            <a href="/organizations" class="back-btn">← Назад к списку</a>
+            <div class="header-actions">
+                <a href="/organizations" class="back-btn">← Назад к списку</a>
+                <a href="/organizations/{{ org.id }}/edit" class="edit-btn">✏️ Редактировать</a>
+                <button onclick="deleteOrganization()" class="delete-btn">🗑️ Удалить</button>
+            </div>
             <h1 class="org-title">{{ org.name }}</h1>
             <div class="org-subtitle">
                 <span class="inn-badge">ИНН: {{ org.inn }}</span>
@@ -600,6 +624,28 @@
 
             // Activate clicked tab button
             event.target.classList.add('active');
+        }
+
+        async function deleteOrganization() {
+            if (!confirm('Вы уверены, что хотите удалить эту организацию?\n\nБудут удалены все связанные данные (показатели, налоги, имущество, продукция).\n\nЭто действие нельзя отменить!')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/organizations/{{ org.id }}', {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    alert('Организация успешно удалена');
+                    window.location.href = '/organizations';
+                } else {
+                    const error = await response.json();
+                    alert('Ошибка при удалении: ' + (error.detail || 'Неизвестная ошибка'));
+                }
+            } catch (error) {
+                alert('Ошибка при удалении: ' + error.message);
+            }
         }
     </script>
 </body>
