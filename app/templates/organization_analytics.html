@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Аналитика - {{ organization.name }}</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 28px;
+            margin: 0;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .company-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            padding-top: 20px;
+            border-top: 2px solid #f0f0f0;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-label {
+            color: #999;
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            color: #333;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        /* Metrics Cards */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .metric-icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .metric-title {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .metric-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .metric-subtitle {
+            color: #999;
+            font-size: 12px;
+        }
+
+        .metric-trend {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        .metric-trend.up {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .metric-trend.down {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .metric-trend.neutral {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+
+        /* Charts */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .chart-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+
+        .chart-container.large {
+            height: 400px;
+        }
+
+        /* Comparison Table */
+        .comparison-section {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .comparison-section h2 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .comparison-table th {
+            background: #f8f9fa;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #666;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .comparison-table td {
+            padding: 15px;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .comparison-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .highlight-row {
+            background: #e7f3ff !important;
+        }
+
+        .highlight-row td {
+            font-weight: bold;
+        }
+
+        /* Years Timeline */
+        .timeline-section {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .timeline-section h2 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .timeline {
+            display: flex;
+            gap: 15px;
+            overflow-x: auto;
+            padding-bottom: 20px;
+        }
+
+        .timeline-year {
+            flex: 0 0 200px;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .timeline-year.active {
+            background: linear-gradient(135deg, #667eea20 0%, #764ba220 100%);
+            border-left-color: #764ba2;
+        }
+
+        .timeline-year-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .timeline-metric {
+            margin-bottom: 10px;
+        }
+
+        .timeline-metric-label {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 3px;
+        }
+
+        .timeline-metric-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        @media (max-width: 768px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-top">
+                <h1>📊 Аналитика: {{ organization.name }}</h1>
+                <div class="header-buttons">
+                    <a href="/organizations/{{ organization.id }}" class="btn btn-secondary">Карточка</a>
+                    <a href="/organizations/{{ organization.id }}/edit" class="btn btn-secondary">Редактировать</a>
+                    <a href="/organizations" class="btn btn-secondary">К списку</a>
+                </div>
+            </div>
+
+            <div class="company-info">
+                <div class="info-item">
+                    <span class="info-label">ИНН</span>
+                    <span class="info-value">{{ organization.inn }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Отрасль</span>
+                    <span class="info-value">{{ organization.main_industry or '-' }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Район</span>
+                    <span class="info-value">{{ organization.district or '-' }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Размер компании</span>
+                    <span class="info-value">{{ organization.company_size or '-' }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Current Year Metrics -->
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-icon">💰</div>
+                <div class="metric-title">Выручка ({{ latest_year }})</div>
+                <div class="metric-value">
+                    {% if latest_metrics.revenue %}
+                        {{ "{:,.0f}".format(latest_metrics.revenue).replace(",", " ") }} ₽
+                    {% else %}
+                        Нет данных
+                    {% endif %}
+                </div>
+                {% if revenue_trend %}
+                <span class="metric-trend {{ revenue_trend.direction }}">
+                    {{ revenue_trend.change }}
+                </span>
+                {% endif %}
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-icon">📈</div>
+                <div class="metric-title">Прибыль ({{ latest_year }})</div>
+                <div class="metric-value">
+                    {% if latest_metrics.profit %}
+                        {{ "{:,.0f}".format(latest_metrics.profit).replace(",", " ") }} ₽
+                    {% else %}
+                        Нет данных
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-icon">👥</div>
+                <div class="metric-title">Сотрудники ({{ latest_year }})</div>
+                <div class="metric-value">
+                    {% if latest_metrics.total_employees %}
+                        {{ "{:,}".format(latest_metrics.total_employees).replace(",", " ") }}
+                    {% else %}
+                        Нет данных
+                    {% endif %}
+                </div>
+                {% if employees_trend %}
+                <span class="metric-trend {{ employees_trend.direction }}">
+                    {{ employees_trend.change }}
+                </span>
+                {% endif %}
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-icon">💵</div>
+                <div class="metric-title">Средняя зарплата</div>
+                <div class="metric-value">
+                    {% if latest_metrics.avg_salary_total %}
+                        {{ "{:,.0f}".format(latest_metrics.avg_salary_total).replace(",", " ") }} ₽
+                    {% else %}
+                        Нет данных
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-icon">💼</div>
+                <div class="metric-title">Инвестиции ({{ latest_year }})</div>
+                <div class="metric-value">
+                    {% if latest_metrics.investments %}
+                        {{ "{:,.0f}".format(latest_metrics.investments).replace(",", " ") }} ₽
+                    {% else %}
+                        Нет данных
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-icon">🌍</div>
+                <div class="metric-title">Экспорт</div>
+                <div class="metric-value">
+                    {% if latest_metrics.export_volume %}
+                        {{ "{:,.0f}".format(latest_metrics.export_volume).replace(",", " ") }} ₽
+                    {% else %}
+                        Нет данных
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="charts-grid">
+            <div class="chart-card">
+                <div class="chart-title">💰 Динамика выручки по годам</div>
+                <div class="chart-container">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-title">📈 Прибыль и рентабельность</div>
+                <div class="chart-container">
+                    <canvas id="profitChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-title">👥 Численность сотрудников</div>
+                <div class="chart-container">
+                    <canvas id="employeesChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-title">💵 Средняя зарплата</div>
+                <div class="chart-container">
+                    <canvas id="salaryChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Complex Multi-metric Chart -->
+        <div class="chart-card">
+            <div class="chart-title">📊 Комплексный анализ показателей</div>
+            <div class="chart-container large">
+                <canvas id="complexChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Years Timeline -->
+        <div class="timeline-section">
+            <h2>📅 История показателей по годам</h2>
+            <div class="timeline">
+                {% for metric in all_metrics %}
+                <div class="timeline-year {% if metric.year == latest_year %}active{% endif %}">
+                    <div class="timeline-year-title">{{ metric.year }}</div>
+                    <div class="timeline-metric">
+                        <div class="timeline-metric-label">Выручка</div>
+                        <div class="timeline-metric-value">
+                            {% if metric.revenue %}
+                                {{ "{:,.0f}".format(metric.revenue / 1000000).replace(",", " ") }} млн ₽
+                            {% else %}
+                                -
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="timeline-metric">
+                        <div class="timeline-metric-label">Прибыль</div>
+                        <div class="timeline-metric-value">
+                            {% if metric.profit %}
+                                {{ "{:,.0f}".format(metric.profit / 1000000).replace(",", " ") }} млн ₽
+                            {% else %}
+                                -
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="timeline-metric">
+                        <div class="timeline-metric-label">Сотрудники</div>
+                        <div class="timeline-metric-value">
+                            {% if metric.total_employees %}
+                                {{ "{:,}".format(metric.total_employees).replace(",", " ") }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="timeline-metric">
+                        <div class="timeline-metric-label">Инвестиции</div>
+                        <div class="timeline-metric-value">
+                            {% if metric.investments %}
+                                {{ "{:,.0f}".format(metric.investments / 1000000).replace(",", " ") }} млн ₽
+                            {% else %}
+                                -
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Industry Comparison -->
+        {% if industry_comparison %}
+        <div class="comparison-section">
+            <h2>🏭 Сравнение с компаниями отрасли: {{ organization.main_industry }}</h2>
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Компания</th>
+                        <th>Выручка ({{ latest_year }})</th>
+                        <th>Прибыль</th>
+                        <th>Сотрудники</th>
+                        <th>Средняя зарплата</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for comp in industry_comparison %}
+                    <tr {% if comp.id == organization.id %}class="highlight-row"{% endif %}>
+                        <td>
+                            {% if comp.id == organization.id %}
+                                <strong>{{ comp.name }} (Текущая)</strong>
+                            {% else %}
+                                {{ comp.name }}
+                            {% endif %}
+                        </td>
+                        <td>{{ "{:,.0f}".format(comp.revenue).replace(",", " ") if comp.revenue else '-' }} ₽</td>
+                        <td>{{ "{:,.0f}".format(comp.profit).replace(",", " ") if comp.profit else '-' }} ₽</td>
+                        <td>{{ "{:,}".format(comp.employees).replace(",", " ") if comp.employees else '-' }}</td>
+                        <td>{{ "{:,.0f}".format(comp.avg_salary).replace(",", " ") if comp.avg_salary else '-' }} ₽</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        const colors = {
+            primary: 'rgba(102, 126, 234, 0.8)',
+            secondary: 'rgba(118, 75, 162, 0.8)',
+            success: 'rgba(40, 167, 69, 0.8)',
+            warning: 'rgba(255, 193, 7, 0.8)',
+            danger: 'rgba(220, 53, 69, 0.8)',
+            info: 'rgba(23, 162, 184, 0.8)'
+        };
+
+        // Revenue Chart
+        const metricsData = {{ metrics_data | tojson }};
+        
+        const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+        new Chart(revenueCtx, {
+            type: 'line',
+            data: {
+                labels: metricsData.map(d => d.year),
+                datasets: [{
+                    label: 'Выручка (₽)',
+                    data: metricsData.map(d => d.revenue),
+                    borderColor: colors.primary,
+                    backgroundColor: colors.primary.replace('0.8', '0.2'),
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return (value / 1000000).toFixed(0) + ' млн ₽';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Profit Chart
+        const profitCtx = document.getElementById('profitChart').getContext('2d');
+        new Chart(profitCtx, {
+            type: 'bar',
+            data: {
+                labels: metricsData.map(d => d.year),
+                datasets: [{
+                    label: 'Прибыль (₽)',
+                    data: metricsData.map(d => d.profit),
+                    backgroundColor: colors.success,
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return (value / 1000000).toFixed(0) + ' млн ₽';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Employees Chart
+        const employeesCtx = document.getElementById('employeesChart').getContext('2d');
+        new Chart(employeesCtx, {
+            type: 'line',
+            data: {
+                labels: metricsData.map(d => d.year),
+                datasets: [
+                    {
+                        label: 'Всего сотрудников',
+                        data: metricsData.map(d => d.total_employees),
+                        borderColor: colors.info,
+                        backgroundColor: colors.info.replace('0.8', '0.2'),
+                        tension: 0.4,
+                        fill: true
+                    },
+                    {
+                        label: 'Сотрудников в Москве',
+                        data: metricsData.map(d => d.moscow_employees),
+                        borderColor: colors.secondary,
+                        backgroundColor: colors.secondary.replace('0.8', '0.2'),
+                        tension: 0.4,
+                        fill: true
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Salary Chart
+        const salaryCtx = document.getElementById('salaryChart').getContext('2d');
+        new Chart(salaryCtx, {
+            type: 'bar',
+            data: {
+                labels: metricsData.map(d => d.year),
+                datasets: [
+                    {
+                        label: 'Средняя (общая)',
+                        data: metricsData.map(d => d.avg_salary_total),
+                        backgroundColor: colors.warning,
+                        borderRadius: 8
+                    },
+                    {
+                        label: 'Средняя (Москва)',
+                        data: metricsData.map(d => d.avg_salary_moscow),
+                        backgroundColor: colors.danger,
+                        borderRadius: 8
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString('ru-RU') + ' ₽';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Complex Multi-metric Chart
+        const complexCtx = document.getElementById('complexChart').getContext('2d');
+        new Chart(complexCtx, {
+            type: 'line',
+            data: {
+                labels: metricsData.map(d => d.year),
+                datasets: [
+                    {
+                        label: 'Выручка (млн ₽)',
+                        data: metricsData.map(d => d.revenue / 1000000),
+                        borderColor: colors.primary,
+                        tension: 0.4,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'Прибыль (млн ₽)',
+                        data: metricsData.map(d => d.profit / 1000000),
+                        borderColor: colors.success,
+                        tension: 0.4,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'Инвестиции (млн ₽)',
+                        data: metricsData.map(d => d.investments / 1000000),
+                        borderColor: colors.secondary,
+                        tension: 0.4,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'Экспорт (млн ₽)',
+                        data: metricsData.map(d => d.export_volume / 1000000),
+                        borderColor: colors.info,
+                        tension: 0.4,
+                        yAxisID: 'y'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
+                scales: {
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

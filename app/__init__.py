@@ -212,6 +212,129 @@ async def list_organizations(
     })
 
 
+@app.get("/organizations/{organization_id}/analytics", response_class=HTMLResponse)
+async def organization_analytics(
+    request: Request,
+    organization_id: int,
+    db: Session = Depends(get_db)
+):
+    """
+    Detailed analytics page for a specific organization.
+    """
+    from sqlalchemy import func, desc
+    
+    # Get organization
+    org = db.query(Organization).filter(Organization.id == organization_id).first()
+    
+    if not org:
+        raise HTTPException(status_code=404, detail="Organization not found")
+    
+    # Get all metrics ordered by year
+    all_metrics = db.query(OrganizationMetrics).filter(
+        OrganizationMetrics.organization_id == organization_id
+    ).order_by(OrganizationMetrics.year).all()
+    
+    # Get latest year metrics
+    latest_year = db.query(func.max(OrganizationMetrics.year)).filter(
+        OrganizationMetrics.organization_id == organization_id
+    ).scalar() or datetime.now().year
+    
+    latest_metrics = db.query(OrganizationMetrics).filter(
+        OrganizationMetrics.organization_id == organization_id,
+        OrganizationMetrics.year == latest_year
+    ).first()
+    
+    # Calculate trends
+    prev_year_metrics = db.query(OrganizationMetrics).filter(
+        OrganizationMetrics.organization_id == organization_id,
+        OrganizationMetrics.year == latest_year - 1
+    ).first()
+    
+    revenue_trend = None
+    employees_trend = None
+    
+    if latest_metrics and prev_year_metrics:
+        if prev_year_metrics.revenue and latest_metrics.revenue:
+            change = ((latest_metrics.revenue - prev_year_metrics.revenue) / prev_year_metrics.revenue) * 100
+            revenue_trend = {
+                'change': f"{'↑' if change > 0 else '↓'} {abs(change):.1f}%",
+                'direction': 'up' if change > 0 else 'down' if change < 0 else 'neutral'
+            }
+        
+        if prev_year_metrics.total_employees and latest_metrics.total_employees:
+            change = ((latest_metrics.total_employees - prev_year_metrics.total_employees) / prev_year_metrics.total_employees) * 100
+            employees_trend = {
+                'change': f"{'↑' if change > 0 else '↓'} {abs(change):.1f}%",
+                'direction': 'up' if change > 0 else 'down' if change < 0 else 'neutral'
+            }
+    
+    # Prepare metrics data for charts
+    metrics_data = [
+        {
+            'year': m.year,
+            'revenue': float(m.revenue or 0),
+            'profit': float(m.profit or 0),
+            'total_employees': int(m.total_employees or 0),
+            'moscow_employees': int(m.moscow_employees or 0),
+            'avg_salary_total': float(m.avg_salary_total or 0),
+            'avg_salary_moscow': float(m.avg_salary_moscow or 0),
+            'investments': float(m.investments or 0),
+            'export_volume': float(m.export_volume or 0)
+        }
+        for m in all_metrics
+    ]
+    
+    # Industry comparison
+    industry_comparison = []
+    if org.main_industry:
+        industry_orgs = db.query(
+            Organization.id,
+            Organization.name,
+            func.max(OrganizationMetrics.revenue).label('revenue'),
+            func.max(OrganizationMetrics.profit).label('profit'),
+            func.max(OrganizationMetrics.total_employees).label('employees'),
+            func.max(OrganizationMetrics.avg_salary_total).label('avg_salary')
+        ).join(
+            OrganizationMetrics,
+            Organization.id == OrganizationMetrics.organization_id
+        ).filter(
+            Organization.main_industry == org.main_industry,
+            OrganizationMetrics.year == latest_year
+        ).group_by(
+            Organization.id,
+            Organization.name
+        ).order_by(
+            desc('revenue')
+        ).limit(10).all()
+        
+        industry_comparison = [
+            {
+                'id': org_id,
+                'name': name,
+                'revenue': float(revenue or 0),
+                'profit': float(profit or 0),
+                'employees': int(employees or 0) if employees else None,
+                'avg_salary': float(avg_salary or 0) if avg_salary else None
+            }
+            for org_id, name, revenue, profit, employees, avg_salary in industry_orgs
+        ]
+    
+    return templates.TemplateResponse(
+        "organization_analytics.html",
+        {
+            "request": request,
+            "organization": org,
+            "latest_year": latest_year,
+            "latest_metrics": latest_metrics or {},
+            "all_metrics": all_metrics,
+            "metrics_data": metrics_data,
+            "revenue_trend": revenue_trend,
+            "employees_trend": employees_trend,
+            "industry_comparison": industry_comparison
+        }
+    )
+
+
 @app.get("/organizations/{organization_id}", response_class=HTMLResponse)
 async def view_organization(
     request: Request,
@@ -467,6 +590,188 @@ async def update_organization_full(
     except Exception as e:
         db.rollback()
         logger.error("organization_full_update_failed", organization_id=organization_id, error=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/analytics", response_class=HTMLResponse)
+async def analytics(request: Request, db: Session = Depends(get_db)):
+    """
+    Analytics dashboard with metrics, charts and visualizations.
+    """
+    from sqlalchemy import func, desc, or_
+    
+    try:
+        # Summary statistics
+        total_organizations = db.query(func.count(Organization.id)).scalar()
+        
+        # Get latest year data
+        latest_year = db.query(func.max(OrganizationMetrics.year)).scalar() or datetime.now().year
+        
+        # Total revenue for latest year
+        total_revenue = db.query(func.sum(OrganizationMetrics.revenue)).filter(
+            OrganizationMetrics.year == latest_year
+        ).scalar() or 0
+        
+        # Previous year revenue for comparison
+        prev_year_revenue = db.query(func.sum(OrganizationMetrics.revenue)).filter(
+            OrganizationMetrics.year == latest_year - 1
+        ).scalar() or 0
+        
+        revenue_change = 0
+        if prev_year_revenue > 0:
+            revenue_change = ((total_revenue - prev_year_revenue) / prev_year_revenue) * 100
+        
+        # Total employees
+        total_employees = db.query(func.sum(OrganizationMetrics.total_employees)).filter(
+            OrganizationMetrics.year == latest_year
+        ).scalar() or 0
+        
+        # Total industries
+        total_industries = db.query(func.count(func.distinct(Organization.main_industry))).filter(
+            Organization.main_industry.isnot(None)
+        ).scalar()
+        
+        # Revenue by year
+        revenue_by_year = db.query(
+            OrganizationMetrics.year,
+            func.sum(OrganizationMetrics.revenue).label('revenue')
+        ).group_by(OrganizationMetrics.year).order_by(OrganizationMetrics.year).all()
+        
+        revenue_by_year_data = [
+            {'year': year, 'revenue': float(revenue or 0)}
+            for year, revenue in revenue_by_year
+        ]
+        
+        # Employees by year
+        employees_by_year = db.query(
+            OrganizationMetrics.year,
+            func.sum(OrganizationMetrics.total_employees).label('employees')
+        ).group_by(OrganizationMetrics.year).order_by(OrganizationMetrics.year).all()
+        
+        employees_by_year_data = [
+            {'year': year, 'employees': int(employees or 0)}
+            for year, employees in employees_by_year
+        ]
+        
+        # Taxes by year
+        taxes_by_year = db.query(
+            OrganizationTaxes.year,
+            func.sum(OrganizationTaxes.total_taxes_moscow).label('taxes')
+        ).group_by(OrganizationTaxes.year).order_by(OrganizationTaxes.year).all()
+        
+        taxes_by_year_data = [
+            {'year': year, 'taxes': float(taxes or 0)}
+            for year, taxes in taxes_by_year
+        ]
+        
+        # Industry distribution
+        industry_distribution = db.query(
+            Organization.main_industry,
+            func.count(Organization.id).label('count')
+        ).filter(
+            Organization.main_industry.isnot(None)
+        ).group_by(
+            Organization.main_industry
+        ).order_by(
+            desc('count')
+        ).limit(6).all()
+        
+        industry_distribution_data = [
+            {'industry': industry or 'Не указано', 'count': count}
+            for industry, count in industry_distribution
+        ]
+        
+        # Complex metrics (revenue, profit, investments by year)
+        complex_metrics = db.query(
+            OrganizationMetrics.year,
+            func.sum(OrganizationMetrics.revenue).label('revenue'),
+            func.sum(OrganizationMetrics.profit).label('profit'),
+            func.sum(OrganizationMetrics.investments).label('investments')
+        ).group_by(OrganizationMetrics.year).order_by(OrganizationMetrics.year).all()
+        
+        complex_metrics_data = [
+            {
+                'year': year,
+                'revenue': float(revenue or 0),
+                'profit': float(profit or 0),
+                'investments': float(investments or 0)
+            }
+            for year, revenue, profit, investments in complex_metrics
+        ]
+        
+        # Top organizations by revenue
+        top_orgs_query = db.query(
+            Organization.id,
+            Organization.name,
+            Organization.main_industry,
+            func.max(OrganizationMetrics.revenue).label('revenue'),
+            func.max(OrganizationMetrics.total_employees).label('employees'),
+            func.max(OrganizationMetrics.avg_salary_total).label('avg_salary')
+        ).join(
+            OrganizationMetrics,
+            Organization.id == OrganizationMetrics.organization_id
+        ).filter(
+            OrganizationMetrics.year == latest_year
+        ).group_by(
+            Organization.id,
+            Organization.name,
+            Organization.main_industry
+        ).order_by(
+            desc('revenue')
+        ).limit(10).all()
+        
+        top_organizations = [
+            {
+                'id': org_id,
+                'name': name,
+                'main_industry': industry,
+                'revenue': float(revenue or 0),
+                'employees': int(employees or 0) if employees else None,
+                'avg_salary': float(avg_salary or 0) if avg_salary else None
+            }
+            for org_id, name, industry, revenue, employees, avg_salary in top_orgs_query
+        ]
+        
+        # Available years for filter
+        available_years = db.query(
+            func.distinct(OrganizationMetrics.year)
+        ).order_by(
+            desc(OrganizationMetrics.year)
+        ).all()
+        available_years = [year[0] for year in available_years if year[0]]
+        
+        # Industries for filter
+        industries = db.query(
+            func.distinct(Organization.main_industry)
+        ).filter(
+            Organization.main_industry.isnot(None)
+        ).order_by(Organization.main_industry).all()
+        industries = [ind[0] for ind in industries if ind[0]]
+        
+        return templates.TemplateResponse(
+            "analytics.html",
+            {
+                "request": request,
+                "summary": {
+                    "total_organizations": total_organizations,
+                    "total_revenue": total_revenue,
+                    "revenue_change": revenue_change,
+                    "total_employees": int(total_employees),
+                    "total_industries": total_industries
+                },
+                "revenue_by_year": revenue_by_year_data,
+                "employees_by_year": employees_by_year_data,
+                "taxes_by_year": taxes_by_year_data,
+                "industry_distribution": industry_distribution_data,
+                "complex_metrics": complex_metrics_data,
+                "top_organizations": top_organizations,
+                "available_years": available_years,
+                "industries": industries
+            }
+        )
+        
+    except Exception as e:
+        logger.error("analytics_page_failed", error=str(e))
         raise HTTPException(status_code=500, detail=str(e))
 
 
