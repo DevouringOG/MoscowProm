@@ -2,7 +2,7 @@
 from contextlib import asynccontextmanager
 from pathlib import Path
 from datetime import datetime
-from fastapi import FastAPI, Request, UploadFile, File, HTTPException, Depends
+from fastapi import FastAPI, Request, UploadFile, File, HTTPException, Depends, Query
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
@@ -121,10 +121,14 @@ async def list_organizations(
     request: Request,
     page: int = 1,
     search: str = None,
+    industry: list[str] = Query(None),
+    district: list[str] = Query(None),
+    region: list[str] = Query(None),
+    size: list[str] = Query(None),
     db: Session = Depends(get_db)
 ):
     """
-    List all organizations with pagination and search.
+    List all organizations with pagination, search and multiple filters.
     """
     per_page = 20
     offset = (page - 1) * per_page
@@ -140,12 +144,55 @@ async def list_organizations(
             (Organization.inn.ilike(search_filter))
         )
     
+    # Apply industry filter (multiple values with OR)
+    if industry:
+        industry_filters = []
+        for ind in industry:
+            industry_filters.append(Organization.main_industry.ilike(f"%{ind}%"))
+            industry_filters.append(Organization.extra_industry.ilike(f"%{ind}%"))
+        from sqlalchemy import or_
+        query = query.filter(or_(*industry_filters))
+    
+    # Apply district filter (multiple values with OR)
+    if district:
+        district_filters = [Organization.district.ilike(f"%{d}%") for d in district]
+        from sqlalchemy import or_
+        query = query.filter(or_(*district_filters))
+    
+    # Apply region filter (multiple values with OR)
+    if region:
+        region_filters = [Organization.region.ilike(f"%{r}%") for r in region]
+        from sqlalchemy import or_
+        query = query.filter(or_(*region_filters))
+    
+    # Apply size filter (multiple values with OR)
+    if size:
+        size_filters = []
+        for s in size:
+            size_filters.append(Organization.company_size.ilike(f"%{s}%"))
+            size_filters.append(Organization.company_size_2022.ilike(f"%{s}%"))
+        from sqlalchemy import or_
+        query = query.filter(or_(*size_filters))
+    
     # Get total count
     total = query.count()
     total_pages = (total + per_page - 1) // per_page
     
     # Get organizations for current page
     organizations = query.order_by(Organization.name).offset(offset).limit(per_page).all()
+    
+    # Get unique values for filter checkboxes
+    industries = db.query(Organization.main_industry).distinct().filter(Organization.main_industry.isnot(None)).order_by(Organization.main_industry).all()
+    industries = [i[0] for i in industries if i[0]]
+    
+    districts = db.query(Organization.district).distinct().filter(Organization.district.isnot(None)).order_by(Organization.district).all()
+    districts = [d[0] for d in districts if d[0]]
+    
+    regions = db.query(Organization.region).distinct().filter(Organization.region.isnot(None)).order_by(Organization.region).all()
+    regions = [r[0] for r in regions if r[0]]
+    
+    sizes = db.query(Organization.company_size).distinct().filter(Organization.company_size.isnot(None)).order_by(Organization.company_size).all()
+    sizes = [s[0] for s in sizes if s[0]]
     
     return templates.TemplateResponse("organizations.html", {
         "request": request,
@@ -154,6 +201,14 @@ async def list_organizations(
         "total_pages": total_pages,
         "total": total,
         "search": search or "",
+        "selected_industries": industry or [],
+        "selected_districts": district or [],
+        "selected_regions": region or [],
+        "selected_sizes": size or [],
+        "industries": industries,
+        "districts": districts,
+        "regions": regions,
+        "sizes": sizes,
     })
 
 
@@ -210,7 +265,7 @@ async def edit_organization_page(
     db: Session = Depends(get_db)
 ):
     """
-    Show edit form for an organization.
+    Show FULL edit form for an organization with ALL data (metrics, taxes, assets, products, meta).
     """
     org = db.query(Organization).filter(Organization.id == organization_id).first()
     
@@ -238,7 +293,7 @@ async def edit_organization_page(
         OrganizationMeta.organization_id == organization_id
     ).first()
     
-    return templates.TemplateResponse("organization_edit.html", {
+    return templates.TemplateResponse("organization_edit_full.html", {
         "request": request,
         "org": org,
         "metrics": metrics,
@@ -249,14 +304,14 @@ async def edit_organization_page(
     })
 
 
-@app.post("/organizations/{organization_id}/edit")
-async def update_organization(
+@app.post("/organizations/{organization_id}/edit-full")
+async def update_organization_full(
     request: Request,
     organization_id: int,
     db: Session = Depends(get_db)
 ):
     """
-    Update organization data.
+    Update ALL organization data including metrics, taxes, assets, products, and meta.
     """
     org = db.query(Organization).filter(Organization.id == organization_id).first()
     
@@ -264,67 +319,154 @@ async def update_organization(
         raise HTTPException(status_code=404, detail="Organization not found")
     
     try:
-        # Get form data
-        form_data = await request.form()
+        # Get JSON data
+        data = await request.json()
         
         # Update organization basic info
-        org.name = form_data.get("name", org.name)
-        org.full_name = form_data.get("full_name", org.full_name)
-        org.inn = form_data.get("inn", org.inn)
-        org.status_spark = form_data.get("status_spark", org.status_spark)
-        org.status_internal = form_data.get("status_internal", org.status_internal)
-        org.status_final = form_data.get("status_final", org.status_final)
-        org.legal_address = form_data.get("legal_address", org.legal_address)
-        org.production_address = form_data.get("production_address", org.production_address)
-        org.additional_address = form_data.get("additional_address", org.additional_address)
-        org.legal_address_coords = form_data.get("legal_address_coords", org.legal_address_coords)
-        org.production_address_coords = form_data.get("production_address_coords", org.production_address_coords)
-        org.additional_address_coords = form_data.get("additional_address_coords", org.additional_address_coords)
-        org.main_industry = form_data.get("main_industry", org.main_industry)
-        org.main_subindustry = form_data.get("main_subindustry", org.main_subindustry)
-        org.extra_industry = form_data.get("extra_industry", org.extra_industry)
-        org.extra_subindustry = form_data.get("extra_subindustry", org.extra_subindustry)
-        org.main_okved = form_data.get("main_okved", org.main_okved)
-        org.main_okved_name = form_data.get("main_okved_name", org.main_okved_name)
-        org.prod_okved = form_data.get("prod_okved", org.prod_okved)
-        org.prod_okved_name = form_data.get("prod_okved_name", org.prod_okved_name)
-        org.company_info = form_data.get("company_info", org.company_info)
-        org.company_size = form_data.get("company_size", org.company_size)
-        org.company_size_2022 = form_data.get("company_size_2022", org.company_size_2022)
-        org.size_by_employees = form_data.get("size_by_employees", org.size_by_employees)
-        org.size_by_employees_2022 = form_data.get("size_by_employees_2022", org.size_by_employees_2022)
-        org.size_by_revenue = form_data.get("size_by_revenue", org.size_by_revenue)
-        org.size_by_revenue_2022 = form_data.get("size_by_revenue_2022", org.size_by_revenue_2022)
-        org.district = form_data.get("district", org.district)
-        org.region = form_data.get("region", org.region)
-        org.head_name = form_data.get("head_name", org.head_name)
-        org.parent_org_name = form_data.get("parent_org_name", org.parent_org_name)
-        org.parent_org_inn = form_data.get("parent_org_inn", org.parent_org_inn)
-        org.parent_relation_type = form_data.get("parent_relation_type", org.parent_relation_type)
-        org.head_contacts = form_data.get("head_contacts", org.head_contacts)
-        org.head_email = form_data.get("head_email", org.head_email)
-        org.employee_contact = form_data.get("employee_contact", org.employee_contact)
-        org.phone = form_data.get("phone", org.phone)
-        org.emergency_contact = form_data.get("emergency_contact", org.emergency_contact)
-        org.website = form_data.get("website", org.website)
-        org.email = form_data.get("email", org.email)
+        general = data.get('general', {})
+        for key, value in general.items():
+            if hasattr(org, key):
+                setattr(org, key, value)
         
-        # Update boolean fields
-        org.got_moscow_support = form_data.get("got_moscow_support") == "on"
-        org.is_system_critical = form_data.get("is_system_critical") == "on"
+        # Update metrics
+        if 'metrics' in data:
+            # Delete existing metrics
+            db.query(OrganizationMetrics).filter(
+                OrganizationMetrics.organization_id == organization_id
+            ).delete()
+            
+            # Add new/updated metrics
+            for metric_data in data['metrics']:
+                if metric_data.get('year'):  # Only if year is specified
+                    metric = OrganizationMetrics(
+                        organization_id=organization_id,
+                        year=int(metric_data['year']),
+                        revenue=float(metric_data['revenue']) if metric_data.get('revenue') else None,
+                        profit=float(metric_data['profit']) if metric_data.get('profit') else None,
+                        total_employees=int(metric_data['total_employees']) if metric_data.get('total_employees') else None,
+                        moscow_employees=int(metric_data['moscow_employees']) if metric_data.get('moscow_employees') else None,
+                        total_fot=float(metric_data['total_fot']) if metric_data.get('total_fot') else None,
+                        moscow_fot=float(metric_data['moscow_fot']) if metric_data.get('moscow_fot') else None,
+                        avg_salary_total=float(metric_data['avg_salary_total']) if metric_data.get('avg_salary_total') else None,
+                        avg_salary_moscow=float(metric_data['avg_salary_moscow']) if metric_data.get('avg_salary_moscow') else None,
+                        investments=float(metric_data['investments']) if metric_data.get('investments') else None,
+                        export_volume=float(metric_data['export_volume']) if metric_data.get('export_volume') else None
+                    )
+                    db.add(metric)
+        
+        # Update taxes
+        if 'taxes' in data:
+            # Delete existing taxes
+            db.query(OrganizationTaxes).filter(
+                OrganizationTaxes.organization_id == organization_id
+            ).delete()
+            
+            # Add new/updated taxes
+            for tax_data in data['taxes']:
+                if tax_data.get('year'):
+                    tax = OrganizationTaxes(
+                        organization_id=organization_id,
+                        year=int(tax_data['year']),
+                        total_taxes_moscow=float(tax_data['total_taxes_moscow']) if tax_data.get('total_taxes_moscow') else None,
+                        profit_tax=float(tax_data['profit_tax']) if tax_data.get('profit_tax') else None,
+                        property_tax=float(tax_data['property_tax']) if tax_data.get('property_tax') else None,
+                        land_tax=float(tax_data['land_tax']) if tax_data.get('land_tax') else None,
+                        ndfl=float(tax_data['ndfl']) if tax_data.get('ndfl') else None,
+                        transport_tax=float(tax_data['transport_tax']) if tax_data.get('transport_tax') else None,
+                        other_taxes=float(tax_data['other_taxes']) if tax_data.get('other_taxes') else None,
+                        excise=float(tax_data['excise']) if tax_data.get('excise') else None
+                    )
+                    db.add(tax)
+        
+        # Update assets
+        if 'assets' in data:
+            # Delete existing assets
+            db.query(OrganizationAssets).filter(
+                OrganizationAssets.organization_id == organization_id
+            ).delete()
+            
+            # Add new/updated assets
+            for asset_data in data['assets']:
+                asset = OrganizationAssets(
+                    organization_id=organization_id,
+                    cadastral_number_land=asset_data.get('cadastral_number_land'),
+                    land_area=float(asset_data['land_area']) if asset_data.get('land_area') else None,
+                    land_usage=asset_data.get('land_usage'),
+                    land_ownership_type=asset_data.get('land_ownership_type'),
+                    land_owner=asset_data.get('land_owner'),
+                    cadastral_number_building=asset_data.get('cadastral_number_building'),
+                    building_area=float(asset_data['building_area']) if asset_data.get('building_area') else None,
+                    building_usage=asset_data.get('building_usage'),
+                    building_type=asset_data.get('building_type'),
+                    building_purpose=asset_data.get('building_purpose'),
+                    building_ownership_type=asset_data.get('building_ownership_type'),
+                    building_owner=asset_data.get('building_owner'),
+                    production_area=float(asset_data['production_area']) if asset_data.get('production_area') else None,
+                    property_summary=asset_data.get('property_summary')
+                )
+                db.add(asset)
+        
+        # Update products
+        if 'products' in data:
+            # Delete existing products
+            db.query(OrganizationProducts).filter(
+                OrganizationProducts.organization_id == organization_id
+            ).delete()
+            
+            # Add new/updated products
+            for product_data in data['products']:
+                product = OrganizationProducts(
+                    organization_id=organization_id,
+                    product_name=product_data.get('product_name'),
+                    standardized_product=product_data.get('standardized_product'),
+                    okpd2_codes=product_data.get('okpd2_codes'),
+                    product_types=product_data.get('product_types'),
+                    product_catalog=product_data.get('product_catalog'),
+                    has_government_orders=product_data.get('has_government_orders', False),
+                    capacity_usage=float(product_data['capacity_usage']) if product_data.get('capacity_usage') else None,
+                    has_export=product_data.get('has_export', False),
+                    export_volume_last_year=float(product_data['export_volume_last_year']) if product_data.get('export_volume_last_year') else None,
+                    export_countries=product_data.get('export_countries'),
+                    tnved_code=product_data.get('tnved_code')
+                )
+                db.add(product)
+        
+        # Update meta
+        if 'meta' in data:
+            meta_data = data['meta']
+            meta = db.query(OrganizationMeta).filter(
+                OrganizationMeta.organization_id == organization_id
+            ).first()
+            
+            if meta:
+                # Update existing
+                for key, value in meta_data.items():
+                    if hasattr(meta, key):
+                        setattr(meta, key, value)
+            else:
+                # Create new
+                meta = OrganizationMeta(
+                    organization_id=organization_id,
+                    industry_spark=meta_data.get('industry_spark'),
+                    industry_directory=meta_data.get('industry_directory'),
+                    presentation_links=meta_data.get('presentation_links'),
+                    registry_development=meta_data.get('registry_development'),
+                    other_notes=meta_data.get('other_notes')
+                )
+                db.add(meta)
         
         db.commit()
-        logger.info("organization_updated", organization_id=organization_id)
+        logger.info("organization_fully_updated", organization_id=organization_id)
         
         return JSONResponse(content={
             "status": "success",
-            "message": "Организация успешно обновлена",
+            "message": "Все данные организации успешно обновлены",
             "organization_id": organization_id
         })
         
     except Exception as e:
         db.rollback()
-        logger.error("organization_update_failed", organization_id=organization_id, error=str(e))
+        logger.error("organization_full_update_failed", organization_id=organization_id, error=str(e))
         raise HTTPException(status_code=500, detail=str(e))
 
 

@@ -90,6 +90,7 @@
             display: flex;
             gap: 15px;
             max-width: 600px;
+            margin-bottom: 20px;
         }
 
         .search-input {
@@ -106,6 +107,182 @@
             border-color: #667eea;
         }
 
+        .filters-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .filter-header {
+            padding: 12px 15px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.2s ease;
+        }
+
+        .filter-header:hover {
+            background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+        }
+
+        .filter-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #495057;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .filter-label-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-toggle {
+            font-size: 18px;
+            transition: transform 0.3s ease;
+        }
+
+        .filter-toggle.collapsed {
+            transform: rotate(-90deg);
+        }
+
+        .filter-count {
+            background: #667eea;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .filter-content {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 10px;
+            max-height: 300px;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+        }
+
+        .filter-content.collapsed {
+            max-height: 0;
+            padding: 0 10px;
+        }
+
+        .filter-search {
+            padding: 8px 12px;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            font-size: 13px;
+            width: 100%;
+            transition: border-color 0.2s ease;
+        }
+
+        .filter-search:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .filter-options {
+            max-height: 200px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .filter-options::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .filter-options::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        .filter-options::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 3px;
+        }
+
+        .filter-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 4px;
+            transition: background 0.2s ease;
+        }
+
+        .filter-option:hover {
+            background: #f8f9fa;
+        }
+
+        .filter-option input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #667eea;
+        }
+
+        .filter-option label {
+            flex: 1;
+            cursor: pointer;
+            font-size: 14px;
+            color: #495057;
+        }
+
+        .filter-option.hidden {
+            display: none;
+        }
+
+        .no-results {
+            padding: 10px;
+            text-align: center;
+            color: #6c757d;
+            font-size: 13px;
+            font-style: italic;
+        }
+
+        .filter-select {
+            padding: 10px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
         .btn-search {
             background: #667eea;
             color: white;
@@ -116,10 +293,60 @@
             background: #5568d3;
         }
 
+        .btn-clear {
+            background: #6c757d;
+            color: white;
+            padding: 10px 20px;
+            font-size: 14px;
+        }
+
+        .btn-clear:hover {
+            background: #5a6268;
+        }
+
         .stats {
             padding: 20px 30px;
             background: #f8f9fa;
             color: #6c757d;
+            font-size: 14px;
+        }
+
+        .active-filters {
+            padding: 15px 30px;
+            background: #e7f3ff;
+            border-bottom: 1px solid #b3d9ff;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .active-filters-label {
+            font-weight: 600;
+            color: #0066cc;
+        }
+
+        .filter-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: white;
+            border: 1px solid #0066cc;
+            border-radius: 20px;
+            color: #0066cc;
+            font-size: 13px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .filter-tag:hover {
+            background: #0066cc;
+            color: white;
+        }
+
+        .filter-tag-remove {
+            font-weight: bold;
             font-size: 14px;
         }
 
@@ -267,24 +494,241 @@
         </div>
 
         <div class="search-section">
-            <form action="/organizations" method="get" class="search-container">
-                <input 
-                    type="text" 
-                    name="search" 
-                    class="search-input" 
-                    placeholder="Поиск по названию или ИНН..." 
-                    value="{{ search }}"
-                >
-                <button type="submit" class="btn btn-search">🔍 Найти</button>
+            <form action="/organizations" method="get">
+                <div class="search-container">
+                    <input 
+                        type="text" 
+                        name="search" 
+                        class="search-input" 
+                        placeholder="Поиск по названию или ИНН..." 
+                        value="{{ search }}"
+                    >
+                </div>
+
+                <div class="filters-container">
+                    <!-- Отрасль -->
+                    <div class="filter-group">
+                        <div class="filter-header" onclick="toggleFilter('industry')">
+                            <div class="filter-label">
+                                <div class="filter-label-left">
+                                    <span class="filter-toggle" id="toggle-industry">▼</span>
+                                    <span>🏭 Отрасль</span>
+                                </div>
+                                {% if selected_industries %}
+                                <span class="filter-count">{{ selected_industries|length }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="filter-content" id="content-industry">
+                            <input type="text" 
+                                   class="filter-search" 
+                                   placeholder="🔍 Поиск отрасли..." 
+                                   onkeyup="filterOptions('industry', this.value)">
+                            <div class="filter-options" id="options-industry">
+                                {% for ind in industries %}
+                                <div class="filter-option" data-value="{{ ind|lower }}">
+                                    <input type="checkbox" 
+                                           name="industry" 
+                                           value="{{ ind }}" 
+                                           id="industry_{{ loop.index }}"
+                                           {% if ind in selected_industries %}checked{% endif %}>
+                                    <label for="industry_{{ loop.index }}">{{ ind }}</label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <div class="no-results" id="no-results-industry" style="display: none;">
+                                Ничего не найдено
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Округ -->
+                    <div class="filter-group">
+                        <div class="filter-header" onclick="toggleFilter('district')">
+                            <div class="filter-label">
+                                <div class="filter-label-left">
+                                    <span class="filter-toggle" id="toggle-district">▼</span>
+                                    <span>📍 Округ</span>
+                                </div>
+                                {% if selected_districts %}
+                                <span class="filter-count">{{ selected_districts|length }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="filter-content" id="content-district">
+                            <input type="text" 
+                                   class="filter-search" 
+                                   placeholder="🔍 Поиск округа..." 
+                                   onkeyup="filterOptions('district', this.value)">
+                            <div class="filter-options" id="options-district">
+                                {% for dist in districts %}
+                                <div class="filter-option" data-value="{{ dist|lower }}">
+                                    <input type="checkbox" 
+                                           name="district" 
+                                           value="{{ dist }}" 
+                                           id="district_{{ loop.index }}"
+                                           {% if dist in selected_districts %}checked{% endif %}>
+                                    <label for="district_{{ loop.index }}">{{ dist }}</label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <div class="no-results" id="no-results-district" style="display: none;">
+                                Ничего не найдено
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Район -->
+                    <div class="filter-group">
+                        <div class="filter-header" onclick="toggleFilter('region')">
+                            <div class="filter-label">
+                                <div class="filter-label-left">
+                                    <span class="filter-toggle" id="toggle-region">▼</span>
+                                    <span>🗺️ Район</span>
+                                </div>
+                                {% if selected_regions %}
+                                <span class="filter-count">{{ selected_regions|length }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="filter-content" id="content-region">
+                            <input type="text" 
+                                   class="filter-search" 
+                                   placeholder="🔍 Поиск района..." 
+                                   onkeyup="filterOptions('region', this.value)">
+                            <div class="filter-options" id="options-region">
+                                {% for reg in regions %}
+                                <div class="filter-option" data-value="{{ reg|lower }}">
+                                    <input type="checkbox" 
+                                           name="region" 
+                                           value="{{ reg }}" 
+                                           id="region_{{ loop.index }}"
+                                           {% if reg in selected_regions %}checked{% endif %}>
+                                    <label for="region_{{ loop.index }}">{{ reg }}</label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <div class="no-results" id="no-results-region" style="display: none;">
+                                Ничего не найдено
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Размер -->
+                    <div class="filter-group">
+                        <div class="filter-header" onclick="toggleFilter('size')">
+                            <div class="filter-label">
+                                <div class="filter-label-left">
+                                    <span class="filter-toggle" id="toggle-size">▼</span>
+                                    <span>📊 Размер</span>
+                                </div>
+                                {% if selected_sizes %}
+                                <span class="filter-count">{{ selected_sizes|length }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="filter-content" id="content-size">
+                            <input type="text" 
+                                   class="filter-search" 
+                                   placeholder="🔍 Поиск размера..." 
+                                   onkeyup="filterOptions('size', this.value)">
+                            <div class="filter-options" id="options-size">
+                                {% for sz in sizes %}
+                                <div class="filter-option" data-value="{{ sz|lower }}">
+                                    <input type="checkbox" 
+                                           name="size" 
+                                           value="{{ sz }}" 
+                                           id="size_{{ loop.index }}"
+                                           {% if sz in selected_sizes %}checked{% endif %}>
+                                    <label for="size_{{ loop.index }}">{{ sz }}</label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <div class="no-results" id="no-results-size" style="display: none;">
+                                Ничего не найдено
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="filter-actions">
+                        <button type="submit" class="btn btn-search">🔍 Применить</button>
+                        <a href="/organizations" class="btn btn-clear">✕ Сбросить</a>
+                    </div>
+                </div>
             </form>
         </div>
 
-        <div class="stats">
-            Всего организаций: <strong>{{ total }}</strong>
+        {% if search or selected_industries or selected_districts or selected_regions or selected_sizes %}
+        <div class="active-filters">
+            <span class="active-filters-label">🔍 Активные фильтры:</span>
+            
             {% if search %}
-            | Результаты поиска: <strong>{{ search }}</strong>
-            <a href="/organizations" style="margin-left: 10px; color: #667eea;">✕ Сбросить</a>
+            {% set params = [] %}
+            {% for ind in selected_industries %}{% set _ = params.append('industry=' + ind) %}{% endfor %}
+            {% for dist in selected_districts %}{% set _ = params.append('district=' + dist) %}{% endfor %}
+            {% for reg in selected_regions %}{% set _ = params.append('region=' + reg) %}{% endfor %}
+            {% for sz in selected_sizes %}{% set _ = params.append('size=' + sz) %}{% endfor %}
+            <a href="/organizations?{{ '&'.join(params) }}" class="filter-tag">
+                Поиск: "{{ search }}" <span class="filter-tag-remove">✕</span>
+            </a>
             {% endif %}
+
+            {% for ind in selected_industries %}
+            {% set params = [] %}
+            {% if search %}{% set _ = params.append('search=' + search) %}{% endif %}
+            {% for i in selected_industries if i != ind %}{% set _ = params.append('industry=' + i) %}{% endfor %}
+            {% for dist in selected_districts %}{% set _ = params.append('district=' + dist) %}{% endfor %}
+            {% for reg in selected_regions %}{% set _ = params.append('region=' + reg) %}{% endfor %}
+            {% for sz in selected_sizes %}{% set _ = params.append('size=' + sz) %}{% endfor %}
+            <a href="/organizations?{{ '&'.join(params) }}" class="filter-tag">
+                Отрасль: {{ ind }} <span class="filter-tag-remove">✕</span>
+            </a>
+            {% endfor %}
+
+            {% for dist in selected_districts %}
+            {% set params = [] %}
+            {% if search %}{% set _ = params.append('search=' + search) %}{% endif %}
+            {% for ind in selected_industries %}{% set _ = params.append('industry=' + ind) %}{% endfor %}
+            {% for d in selected_districts if d != dist %}{% set _ = params.append('district=' + d) %}{% endfor %}
+            {% for reg in selected_regions %}{% set _ = params.append('region=' + reg) %}{% endfor %}
+            {% for sz in selected_sizes %}{% set _ = params.append('size=' + sz) %}{% endfor %}
+            <a href="/organizations?{{ '&'.join(params) }}" class="filter-tag">
+                Округ: {{ dist }} <span class="filter-tag-remove">✕</span>
+            </a>
+            {% endfor %}
+
+            {% for reg in selected_regions %}
+            {% set params = [] %}
+            {% if search %}{% set _ = params.append('search=' + search) %}{% endif %}
+            {% for ind in selected_industries %}{% set _ = params.append('industry=' + ind) %}{% endfor %}
+            {% for dist in selected_districts %}{% set _ = params.append('district=' + dist) %}{% endfor %}
+            {% for r in selected_regions if r != reg %}{% set _ = params.append('region=' + r) %}{% endfor %}
+            {% for sz in selected_sizes %}{% set _ = params.append('size=' + sz) %}{% endfor %}
+            <a href="/organizations?{{ '&'.join(params) }}" class="filter-tag">
+                Район: {{ reg }} <span class="filter-tag-remove">✕</span>
+            </a>
+            {% endfor %}
+
+            {% for sz in selected_sizes %}
+            {% set params = [] %}
+            {% if search %}{% set _ = params.append('search=' + search) %}{% endif %}
+            {% for ind in selected_industries %}{% set _ = params.append('industry=' + ind) %}{% endfor %}
+            {% for dist in selected_districts %}{% set _ = params.append('district=' + dist) %}{% endfor %}
+            {% for reg in selected_regions %}{% set _ = params.append('region=' + reg) %}{% endfor %}
+            {% for s in selected_sizes if s != sz %}{% set _ = params.append('size=' + s) %}{% endfor %}
+            <a href="/organizations?{{ '&'.join(params) }}" class="filter-tag">
+                Размер: {{ sz }} <span class="filter-tag-remove">✕</span>
+            </a>
+            {% endfor %}
+
+            <a href="/organizations" class="filter-tag" style="border-color: #dc3545; color: #dc3545;">
+                <strong>Сбросить все</strong> <span class="filter-tag-remove">✕</span>
+            </a>
+        </div>
+        {% endif %}
+
+        <div class="stats">
+            Найдено организаций: <strong>{{ total }}</strong>
         </div>
 
         <div class="table-container">
@@ -340,8 +784,16 @@
 
         {% if total_pages > 1 %}
         <div class="pagination">
+            {% set query_params = [] %}
+            {% if search %}{% set _ = query_params.append('search=' + search) %}{% endif %}
+            {% for ind in selected_industries %}{% set _ = query_params.append('industry=' + ind) %}{% endfor %}
+            {% for dist in selected_districts %}{% set _ = query_params.append('district=' + dist) %}{% endfor %}
+            {% for reg in selected_regions %}{% set _ = query_params.append('region=' + reg) %}{% endfor %}
+            {% for sz in selected_sizes %}{% set _ = query_params.append('size=' + sz) %}{% endfor %}
+            {% set query_string = '&' + '&'.join(query_params) if query_params else '' %}
+
             {% if page > 1 %}
-            <a href="/organizations?page={{ page - 1 }}{% if search %}&search={{ search }}{% endif %}" class="page-btn">← Назад</a>
+            <a href="/organizations?page={{ page - 1 }}{{ query_string }}" class="page-btn">← Назад</a>
             {% else %}
             <button class="page-btn" disabled>← Назад</button>
             {% endif %}
@@ -350,19 +802,82 @@
                 {% if p == page %}
                 <span class="page-btn active">{{ p }}</span>
                 {% elif p == 1 or p == total_pages or (p >= page - 2 and p <= page + 2) %}
-                <a href="/organizations?page={{ p }}{% if search %}&search={{ search }}{% endif %}" class="page-btn">{{ p }}</a>
+                <a href="/organizations?page={{ p }}{{ query_string }}" class="page-btn">{{ p }}</a>
                 {% elif p == page - 3 or p == page + 3 %}
                 <span class="page-btn" disabled>...</span>
                 {% endif %}
             {% endfor %}
 
             {% if page < total_pages %}
-            <a href="/organizations?page={{ page + 1 }}{% if search %}&search={{ search }}{% endif %}" class="page-btn">Вперёд →</a>
+            <a href="/organizations?page={{ page + 1 }}{{ query_string }}" class="page-btn">Вперёд →</a>
             {% else %}
             <button class="page-btn" disabled>Вперёд →</button>
             {% endif %}
         </div>
         {% endif %}
     </div>
+
+    <script>
+        // Toggle filter visibility
+        function toggleFilter(filterName) {
+            const content = document.getElementById('content-' + filterName);
+            const toggle = document.getElementById('toggle-' + filterName);
+            
+            if (content.classList.contains('collapsed')) {
+                content.classList.remove('collapsed');
+                toggle.classList.remove('collapsed');
+            } else {
+                content.classList.add('collapsed');
+                toggle.classList.add('collapsed');
+            }
+        }
+
+        // Filter options based on search
+        function filterOptions(filterName, searchValue) {
+            const options = document.getElementById('options-' + filterName);
+            const noResults = document.getElementById('no-results-' + filterName);
+            const filterOptions = options.querySelectorAll('.filter-option');
+            
+            searchValue = searchValue.toLowerCase().trim();
+            let visibleCount = 0;
+
+            filterOptions.forEach(option => {
+                const value = option.getAttribute('data-value');
+                if (value.includes(searchValue)) {
+                    option.classList.remove('hidden');
+                    visibleCount++;
+                } else {
+                    option.classList.add('hidden');
+                }
+            });
+
+            // Show/hide "no results" message
+            if (visibleCount === 0) {
+                noResults.style.display = 'block';
+            } else {
+                noResults.style.display = 'none';
+            }
+        }
+
+        // Expand filters that have selected items on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const filterNames = ['industry', 'district', 'region', 'size'];
+            
+            filterNames.forEach(filterName => {
+                const content = document.getElementById('content-' + filterName);
+                const options = document.getElementById('options-' + filterName);
+                const checkedBoxes = options.querySelectorAll('input[type="checkbox"]:checked');
+                
+                // Keep expanded if there are selected items
+                if (checkedBoxes.length > 0) {
+                    content.classList.remove('collapsed');
+                } else {
+                    // Collapse by default if nothing selected
+                    content.classList.add('collapsed');
+                    document.getElementById('toggle-' + filterName).classList.add('collapsed');
+                }
+            });
+        });
+    </script>
 </body>
 </html>
