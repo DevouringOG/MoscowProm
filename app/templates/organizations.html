@@ -21,6 +21,18 @@
  display: flex;
  justify-content: space-between;
  align-items: center;
+ gap: 24px;
+ }
+
+ .header-left {
+ display: flex;
+ align-items: center;
+ gap: 24px;
+ }
+
+ .header-logo {
+ height: 60px;
+ width: auto;
  }
 
  .page-title {
@@ -49,11 +61,16 @@
  align-items: center;
  gap: 8px;
  transition: all 0.3s ease;
+ white-space: nowrap;
  }
 
  .btn-secondary:hover {
  border-color: var(--accent-dark);
  color: var(--accent-dark);
+ }
+
+ .filter-actions .btn-secondary {
+ min-width: auto;
  }
 
  .search-section {
@@ -99,19 +116,13 @@
  .filter-header {
  padding: 12px 15px;
  background: var(--accent-dark);
- cursor: pointer;
  user-select: none;
- transition: background 0.2s ease;
- }
-
- .filter-header:hover {
- background: var(--accent-dark);
  }
 
  .filter-label {
  font-size: 13px;
  font-weight: 600;
- color: var(--text-secondary);
+ color: white;
  text-transform: uppercase;
  letter-spacing: 0.5px;
  display: flex;
@@ -125,13 +136,21 @@
  gap: 8px;
  }
 
- .filter-toggle {
- font-size: 18px;
- transition: transform 0.3s ease;
+ .toggle-all-btn {
+ background: var(--accent-dark);
+ color: white;
+ border: 2px solid var(--accent-dark);
+ padding: 10px 20px;
+ font-size: 14px;
+ cursor: pointer;
+ transition: all 0.3s ease;
+ text-transform: uppercase;
+ font-weight: 600;
  }
 
- .filter-toggle.collapsed {
- transform: rotate(-90deg);
+ .toggle-all-btn:hover {
+ background: #5568d3;
+ border-color: #5568d3;
  }
 
  .filter-count {
@@ -240,7 +259,29 @@
  .filter-actions {
  display: flex;
  gap: 10px;
- align-items: flex-end;
+ align-items: center;
+ margin-top: 20px;
+ }
+
+ .btn-primary {
+ padding: 12px 24px;
+ background: var(--accent-dark);
+ color: white;
+ border: 2px solid var(--accent-dark);
+ font-size: 14px;
+ font-weight: 500;
+ cursor: pointer;
+ text-decoration: none;
+ display: inline-flex;
+ align-items: center;
+ gap: 8px;
+ transition: all 0.3s ease;
+ white-space: nowrap;
+ }
+
+ .btn-primary:hover {
+ background: #5568d3;
+ border-color: #5568d3;
  }
 
  .sort-controls {
@@ -270,48 +311,38 @@
  border-color: var(--accent-dark);
  }
 
- .sort-order-btn {
- background: var(--card-bg);
- color: var(--text-secondary);
- padding: 10px 12px;
+ .sort-order-select {
+ padding: 10px 15px;
  border: 2px solid #e9ecef;
- font-size: 18px;
+ font-size: 14px;
+ background: var(--card-bg);
  cursor: pointer;
- transition: all 0.3s ease;
- min-width: 44px;
- line-height: 1;
+ transition: border-color 0.3s ease;
  }
 
- .sort-order-btn:hover {
- border-color: var(--accent-dark);
- background: var(--accent-light);
- }
-
- .sort-order-btn.active {
- background: var(--accent-dark);
- color: var(--card-bg);
+ .sort-order-select:focus {
+ outline: none;
  border-color: var(--accent-dark);
  }
 
  .btn-search {
  background: var(--accent-dark);
- color: var(--card-bg);
+ color: white;
+ border: 2px solid var(--accent-dark);
  padding: 12px 30px;
+ font-size: 14px;
+ font-weight: 500;
+ cursor: pointer;
+ text-decoration: none;
+ display: inline-flex;
+ align-items: center;
+ gap: 8px;
+ transition: all 0.3s ease;
  }
 
  .btn-search:hover {
  background: #5568d3;
- }
-
- .btn-clear {
- background: var(--text-secondary);
- color: var(--card-bg);
- padding: 10px 20px;
- font-size: 14px;
- }
-
- .btn-clear:hover {
- background: #5a6268;
+ border-color: #5568d3;
  }
 
  .stats {
@@ -323,8 +354,8 @@
 
  .active-filters {
  padding: 15px 30px;
- background: #e7f3ff;
- border-bottom: 1px solid #b3d9ff;
+ background: rgba(70, 80, 100, 0.3);
+ border-bottom: 1px solid var(--border-color);
  display: flex;
  gap: 10px;
  align-items: center;
@@ -333,7 +364,7 @@
 
  .active-filters-label {
  font-weight: 600;
- color: #0066cc;
+ color: var(--text-primary);
  }
 
  .filter-tag {
@@ -342,15 +373,17 @@
  gap: 8px;
  padding: 6px 12px;
  background: var(--card-bg);
- border: 1px solid #0066cc;color: #0066cc;
+ border: 1px solid var(--border-color);
+ color: var(--text-primary);
  font-size: 13px;
  text-decoration: none;
  transition: all 0.2s ease;
  }
 
  .filter-tag:hover {
- background: #0066cc;
- color: var(--card-bg);
+ background: var(--accent-dark);
+ color: white;
+ border-color: var(--accent-dark);
  }
 
  .filter-tag-remove {
@@ -487,7 +520,10 @@
 </head>
 <body>
  <div class="page-header">
+ <div class="header-left">
+ <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 80'%3E%3Cg fill='%23000000'%3E%3Cpath d='M20,50 L35,30 L35,60 Z'/%3E%3Cpath d='M40,50 L55,30 L55,60 Z'/%3E%3Cpath d='M60,50 L75,30 L75,60 Z'/%3E%3Crect x='15' y='60' width='65' height='15'/%3E%3Ccircle cx='52' cy='25' r='8'/%3E%3Cline x1='52' y1='17' x2='52' y2='10' stroke='%23000000' stroke-width='2'/%3E%3Cline x1='52' y1='10' x2='45' y2='15' stroke='%23000000' stroke-width='2'/%3E%3Cline x1='52' y1='10' x2='59' y2='15' stroke='%23000000' stroke-width='2'/%3E%3Cline x1='44' y1='25' x2='35' y2='25' stroke='%23000000' stroke-width='2'/%3E%3Cline x1='35' y1='25' x2='40' y2='20' stroke='%23000000' stroke-width='2'/%3E%3Cline x1='35' y1='25' x2='40' y2='30' stroke='%23000000' stroke-width='2'/%3E%3C/g%3E%3Ctext x='95' y='30' font-family='Arial, sans-serif' font-size='16' font-weight='bold' fill='%23000000'%3EИНДУСТРИАЛЬНЫЕ%3C/text%3E%3Ctext x='95' y='50' font-family='Arial, sans-serif' font-size='16' font-weight='bold' fill='%23000000'%3EДАННЫЕ%3C/text%3E%3Ctext x='95' y='70' font-family='Arial, sans-serif' font-size='16' font-weight='bold' fill='%23000000'%3EМОСКВЫ%3C/text%3E%3C/svg%3E" alt="Индустриальные данные Москвы" class="header-logo">
  <h1 class="page-title">СПИСОК ПРЕДПРИЯТИЙ</h1>
+ </div>
  <div class="header-actions">
  <a href="/analytics" class="btn-secondary">АНАЛИТИКА</a>
  <a href="/organizations/create" class="btn-secondary">ДОБАВИТЬ</a>
@@ -507,15 +543,15 @@
  placeholder="Поиск по названию или ИНН..." 
  value="{{ search }}"
  >
+ <button type="submit" class="btn btn-search">Поиск</button>
 </div>
 
  <div class="filters-container">
  <!-- Отрасль -->
  <div class="filter-group">
- <div class="filter-header" onclick="toggleFilter('industry')">
+ <div class="filter-header">
  <div class="filter-label">
  <div class="filter-label-left">
- <span class="filter-toggle" id="toggle-industry">▾</span>
  <span>Отрасль</span>
 </div>
  {% if selected_industries %}
@@ -548,10 +584,9 @@
 
  <!-- Округ -->
  <div class="filter-group">
- <div class="filter-header" onclick="toggleFilter('district')">
+ <div class="filter-header">
  <div class="filter-label">
  <div class="filter-label-left">
- <span class="filter-toggle" id="toggle-district">▾</span>
  <span> Округ</span>
 </div>
  {% if selected_districts %}
@@ -584,10 +619,9 @@
 
  <!-- Район -->
  <div class="filter-group">
- <div class="filter-header" onclick="toggleFilter('region')">
+ <div class="filter-header">
  <div class="filter-label">
  <div class="filter-label-left">
- <span class="filter-toggle" id="toggle-region">▾</span>
  <span> Район</span>
 </div>
  {% if selected_regions %}
@@ -620,10 +654,9 @@
 
  <!-- Размер -->
  <div class="filter-group">
- <div class="filter-header" onclick="toggleFilter('size')">
+ <div class="filter-header">
  <div class="filter-label">
  <div class="filter-label-left">
- <span class="filter-toggle" id="toggle-size">▾</span>
  <span>Размер</span>
 </div>
  {% if selected_sizes %}
@@ -655,8 +688,9 @@
 </div>
 
  <div class="filter-actions">
- <button type="submit" class="btn btn-search">🔍 Применить</button>
- <a href="/organizations" class="btn btn-clear">× Сбросить</a>
+ <button type="submit" class="btn-primary">Применить фильтры</button>
+ <a href="/organizations" class="btn-secondary">Сбросить</a>
+ <button type="button" class="btn-secondary" onclick="toggleAllFilters()" id="toggleAllBtn">Скрыть все фильтры</button>
  
  <div class="sort-controls">
  <span class="sort-label">Сортировка:</span>
@@ -669,11 +703,10 @@
  <option value="region" {% if sort_by == 'region' %}selected{% endif %}>Район</option>
  <option value="company_size" {% if sort_by == 'company_size' %}selected{% endif %}>Размер</option>
  </select>
- <button type="button" class="sort-order-btn {% if order == 'asc' %}active{% endif %}" 
- onclick="setSortOrder('asc')" title="По возрастанию">▲</button>
- <button type="button" class="sort-order-btn {% if order == 'desc' %}active{% endif %}" 
- onclick="setSortOrder('desc')" title="По убыванию">▼</button>
- <input type="hidden" name="order" id="sort-order" value="{{ order }}">
+ <select name="order" class="sort-order-select" onchange="this.form.submit()">
+ <option value="asc" {% if order == 'asc' %}selected{% endif %}>По возрастанию</option>
+ <option value="desc" {% if order == 'desc' %}selected{% endif %}>По убыванию</option>
+ </select>
  </div>
  </div>
 </div>
@@ -752,10 +785,6 @@
  Размер: {{ sz }} <span class="filter-tag-remove">×</span>
 </a>
  {% endfor %}
-
- <a href="/organizations" class="filter-tag" style="border-color: #dc3545; color: #dc3545;">
- <strong>Сбросить все</strong> <span class="filter-tag-remove">×</span>
-</a>
 </div>
  {% endif %}
 
@@ -807,7 +836,7 @@
  {% if search %}
  По запросу "{{ search }}" ничего не найдено. Попробуйте изменить условия поиска.
  {% else %}
- База данных пуста. Загрузите Excel файл с данными организаций.
+ База данных пуста.
  {% endif %}
 </p>
 </div>
@@ -852,24 +881,25 @@
 </div>
 
  <script>
- // Set sort order
- function setSortOrder(order) {
- document.getElementById('sort-order').value = order;
- document.querySelector('form').submit();
- }
+ let filtersOpen = true;
 
- // Toggle filter visibility
- function toggleFilter(filterName) {
- const content = document.getElementById('content-' + filterName);
- const toggle = document.getElementById('toggle-' + filterName);
+ // Toggle all filters at once
+ function toggleAllFilters() {
+ const filterNames = ['industry', 'district', 'region', 'size'];
+ const btn = document.getElementById('toggleAllBtn');
  
- if (content.classList.contains('collapsed')) {
- content.classList.remove('collapsed');
- toggle.classList.remove('collapsed');
- } else {
+ filterNames.forEach(filterName => {
+ const content = document.getElementById('content-' + filterName);
+ 
+ if (filtersOpen) {
  content.classList.add('collapsed');
- toggle.classList.add('collapsed');
+ } else {
+ content.classList.remove('collapsed');
  }
+ });
+ 
+ filtersOpen = !filtersOpen;
+ btn.textContent = filtersOpen ? 'Скрыть все фильтры' : 'Показать все фильтры';
  }
 
  // Filter options based on search
@@ -899,23 +929,13 @@
  }
  }
 
- // Expand filters that have selected items on page load
+ // Keep all filters open on page load
  document.addEventListener('DOMContentLoaded', function() {
  const filterNames = ['industry', 'district', 'region', 'size'];
  
  filterNames.forEach(filterName => {
  const content = document.getElementById('content-' + filterName);
- const options = document.getElementById('options-' + filterName);
- const checkedBoxes = options.querySelectorAll('input[type="checkbox"]:checked');
- 
- // Keep expanded if there are selected items
- if (checkedBoxes.length > 0) {
  content.classList.remove('collapsed');
- } else {
- // Collapse by default if nothing selected
- content.classList.add('collapsed');
- document.getElementById('toggle-' + filterName).classList.add('collapsed');
- }
  });
  });
 </script>
