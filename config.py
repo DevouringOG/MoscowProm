@@ -12,9 +12,13 @@ settings = Dynaconf(
     merge_enabled=True,
 )
 
+
 def get_database_url() -> str:
     db = settings.database
-    return f"postgresql://{db.user}:{db.password}@{db.host}:{db.port}/{db.name}"
+    return (
+        f"postgresql://{db.user}:{db.password}@{db.host}:{db.port}/{db.name}"
+    )
+
 
 def ensure_directories() -> None:
     directories = [

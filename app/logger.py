@@ -3,6 +3,7 @@ import sys
 import structlog
 from config import settings, BASE_DIR
 
+
 def setup_logging() -> None:
     log_dir = BASE_DIR / settings.logging.log_dir
     log_dir.mkdir(parents=True, exist_ok=True)
@@ -40,6 +41,7 @@ def setup_logging() -> None:
         file_handler = logging.FileHandler(log_file)
         file_handler.setLevel(getattr(logging, settings.logging.level.upper()))
         logging.root.addHandler(file_handler)
+
 
 def get_logger(name: str):
     return structlog.get_logger(name)

@@ -1,5 +1,16 @@
 """Database models for the application."""
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime, Index, Boolean, Text
+
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    Float,
+    ForeignKey,
+    DateTime,
+    Index,
+    Boolean,
+    Text,
+)
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.db.database import Base
@@ -56,9 +67,15 @@ class Organization(Base):
     msp_status = Column(String(100))
     coordinates_lat = Column(Float)
     coordinates_lon = Column(Float)
-    legal_address_coords = Column(String(200))  # Координаты юридического адреса
-    production_address_coords = Column(String(200))  # Координаты адреса производства
-    additional_address_coords = Column(String(200))  # Координаты адреса дополнительной площадки
+    legal_address_coords = Column(
+        String(200)
+    )  # Координаты юридического адреса
+    production_address_coords = Column(
+        String(200)
+    )  # Координаты адреса производства
+    additional_address_coords = Column(
+        String(200)
+    )  # Координаты адреса дополнительной площадки
     district = Column(String(200))
     region = Column(String(200))
 
@@ -66,14 +83,36 @@ class Organization(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     # Relationships
-    metrics = relationship("OrganizationMetrics", back_populates="organization", cascade="all, delete-orphan")
-    taxes = relationship("OrganizationTaxes", back_populates="organization", cascade="all, delete-orphan")
-    assets = relationship("OrganizationAssets", back_populates="organization", cascade="all, delete-orphan")
-    products = relationship("OrganizationProducts", back_populates="organization", cascade="all, delete-orphan")
-    meta = relationship("OrganizationMeta", back_populates="organization", cascade="all, delete-orphan")
+    metrics = relationship(
+        "OrganizationMetrics",
+        back_populates="organization",
+        cascade="all, delete-orphan",
+    )
+    taxes = relationship(
+        "OrganizationTaxes",
+        back_populates="organization",
+        cascade="all, delete-orphan",
+    )
+    assets = relationship(
+        "OrganizationAssets",
+        back_populates="organization",
+        cascade="all, delete-orphan",
+    )
+    products = relationship(
+        "OrganizationProducts",
+        back_populates="organization",
+        cascade="all, delete-orphan",
+    )
+    meta = relationship(
+        "OrganizationMeta",
+        back_populates="organization",
+        cascade="all, delete-orphan",
+    )
 
     def __repr__(self):
-        return f"<Organization(id={self.id}, name={self.name}, inn={self.inn})>"
+        return (
+            f"<Organization(id={self.id}, name={self.name}, inn={self.inn})>"
+        )
 
 
 class OrganizationMetrics(Base):
@@ -82,7 +121,11 @@ class OrganizationMetrics(Base):
     __tablename__ = "organization_metrics"
 
     id = Column(Integer, primary_key=True, index=True)
-    organization_id = Column(Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False)
+    organization_id = Column(
+        Integer,
+        ForeignKey("organizations.id", ondelete="CASCADE"),
+        nullable=False,
+    )
     year = Column(Integer, nullable=False, index=True)
 
     # Financial metrics
@@ -116,7 +159,11 @@ class OrganizationTaxes(Base):
     __tablename__ = "organization_taxes"
 
     id = Column(Integer, primary_key=True, index=True)
-    organization_id = Column(Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False)
+    organization_id = Column(
+        Integer,
+        ForeignKey("organizations.id", ondelete="CASCADE"),
+        nullable=False,
+    )
     year = Column(Integer, nullable=False, index=True)
 
     total_taxes_moscow = Column(Float)
@@ -135,7 +182,11 @@ class OrganizationAssets(Base):
     __tablename__ = "organization_assets"
 
     id = Column(Integer, primary_key=True, index=True)
-    organization_id = Column(Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False)
+    organization_id = Column(
+        Integer,
+        ForeignKey("organizations.id", ondelete="CASCADE"),
+        nullable=False,
+    )
 
     cadastral_number_land = Column(String(200))
     land_area = Column(Float)
@@ -160,7 +211,11 @@ class OrganizationProducts(Base):
     __tablename__ = "organization_products"
 
     id = Column(Integer, primary_key=True, index=True)
-    organization_id = Column(Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False)
+    organization_id = Column(
+        Integer,
+        ForeignKey("organizations.id", ondelete="CASCADE"),
+        nullable=False,
+    )
 
     product_name = Column(String(500))
     standardized_product = Column(String(500))
@@ -181,7 +236,11 @@ class OrganizationMeta(Base):
     __tablename__ = "organization_meta"
 
     id = Column(Integer, primary_key=True, index=True)
-    organization_id = Column(Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False)
+    organization_id = Column(
+        Integer,
+        ForeignKey("organizations.id", ondelete="CASCADE"),
+        nullable=False,
+    )
 
     industry_spark = Column(String(500))
     industry_directory = Column(String(500))

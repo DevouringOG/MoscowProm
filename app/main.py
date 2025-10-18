@@ -4,7 +4,13 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from app.logger import setup_logging, get_logger
 from app.db import engine, Base
-from app.routers import organizations, upload, analytics, organization_analytics, fns
+from app.routers import (
+    organizations,
+    upload,
+    analytics,
+    organization_analytics,
+    fns,
+)
 from config import settings, ensure_directories
 
 setup_logging()
@@ -13,6 +19,7 @@ ensure_directories()
 
 UPLOAD_DIR = Path("uploads")
 UPLOAD_DIR.mkdir(exist_ok=True)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -24,6 +31,7 @@ async def lifespan(app: FastAPI):
         logger.error("database_tables_creation_failed", error=str(e))
     yield
     logger.info("application_shutting_down")
+
 
 app = FastAPI(
     title=settings.app_name,
@@ -43,7 +51,9 @@ app.include_router(organization_analytics.router)
 app.include_router(analytics.router)
 app.include_router(fns.router)
 
+
 @app.get("/")
 async def root_redirect():
     from fastapi.responses import RedirectResponse
+
     return RedirectResponse(url="/analytics")

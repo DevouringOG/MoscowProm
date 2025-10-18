@@ -44,14 +44,20 @@ def upgrade() -> None:
         sa.Column("company_size", sa.String(length=100), nullable=True),
         sa.Column("company_size_2022", sa.String(length=100), nullable=True),
         sa.Column("size_by_employees", sa.String(length=100), nullable=True),
-        sa.Column("size_by_employees_2022", sa.String(length=100), nullable=True),
+        sa.Column(
+            "size_by_employees_2022", sa.String(length=100), nullable=True
+        ),
         sa.Column("size_by_revenue", sa.String(length=100), nullable=True),
-        sa.Column("size_by_revenue_2022", sa.String(length=100), nullable=True),
+        sa.Column(
+            "size_by_revenue_2022", sa.String(length=100), nullable=True
+        ),
         sa.Column("registration_date", sa.DateTime(), nullable=True),
         sa.Column("head_name", sa.String(length=200), nullable=True),
         sa.Column("parent_org_name", sa.String(length=500), nullable=True),
         sa.Column("parent_org_inn", sa.String(length=12), nullable=True),
-        sa.Column("parent_relation_type", sa.String(length=200), nullable=True),
+        sa.Column(
+            "parent_relation_type", sa.String(length=200), nullable=True
+        ),
         sa.Column("head_contacts", sa.String(length=500), nullable=True),
         sa.Column("head_email", sa.String(length=200), nullable=True),
         sa.Column("employee_contact", sa.String(length=500), nullable=True),
@@ -67,42 +73,70 @@ def upgrade() -> None:
         sa.Column("msp_status", sa.String(length=100), nullable=True),
         sa.Column("coordinates_lat", sa.Float(), nullable=True),
         sa.Column("coordinates_lon", sa.Float(), nullable=True),
-        sa.Column("legal_address_coords", sa.String(length=200), nullable=True),
-        sa.Column("production_address_coords", sa.String(length=200), nullable=True),
-        sa.Column("additional_address_coords", sa.String(length=200), nullable=True),
+        sa.Column(
+            "legal_address_coords", sa.String(length=200), nullable=True
+        ),
+        sa.Column(
+            "production_address_coords", sa.String(length=200), nullable=True
+        ),
+        sa.Column(
+            "additional_address_coords", sa.String(length=200), nullable=True
+        ),
         sa.Column("district", sa.String(length=200), nullable=True),
         sa.Column("region", sa.String(length=200), nullable=True),
         sa.Column(
-            "created_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=True
+            "created_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=True,
         ),
         sa.Column("updated_at", sa.DateTime(timezone=True), nullable=True),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_index(op.f("ix_organizations_id"), "organizations", ["id"], unique=False)
-    op.create_index(op.f("ix_organizations_inn"), "organizations", ["inn"], unique=True)
-    op.create_index(op.f("ix_organizations_name"), "organizations", ["name"], unique=False)
+    op.create_index(
+        op.f("ix_organizations_id"), "organizations", ["id"], unique=False
+    )
+    op.create_index(
+        op.f("ix_organizations_inn"), "organizations", ["inn"], unique=True
+    )
+    op.create_index(
+        op.f("ix_organizations_name"), "organizations", ["name"], unique=False
+    )
     op.create_table(
         "organization_assets",
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("organization_id", sa.Integer(), nullable=False),
-        sa.Column("cadastral_number_land", sa.String(length=200), nullable=True),
+        sa.Column(
+            "cadastral_number_land", sa.String(length=200), nullable=True
+        ),
         sa.Column("land_area", sa.Float(), nullable=True),
         sa.Column("land_usage", sa.String(length=200), nullable=True),
         sa.Column("land_ownership_type", sa.String(length=200), nullable=True),
         sa.Column("land_owner", sa.String(length=500), nullable=True),
-        sa.Column("cadastral_number_building", sa.String(length=200), nullable=True),
+        sa.Column(
+            "cadastral_number_building", sa.String(length=200), nullable=True
+        ),
         sa.Column("building_area", sa.Float(), nullable=True),
         sa.Column("building_usage", sa.String(length=200), nullable=True),
         sa.Column("building_type", sa.String(length=200), nullable=True),
         sa.Column("building_purpose", sa.String(length=200), nullable=True),
-        sa.Column("building_ownership_type", sa.String(length=200), nullable=True),
+        sa.Column(
+            "building_ownership_type", sa.String(length=200), nullable=True
+        ),
         sa.Column("building_owner", sa.String(length=500), nullable=True),
         sa.Column("production_area", sa.Float(), nullable=True),
         sa.Column("property_summary", sa.Text(), nullable=True),
-        sa.ForeignKeyConstraint(["organization_id"], ["organizations.id"], ondelete="CASCADE"),
+        sa.ForeignKeyConstraint(
+            ["organization_id"], ["organizations.id"], ondelete="CASCADE"
+        ),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_index(op.f("ix_organization_assets_id"), "organization_assets", ["id"], unique=False)
+    op.create_index(
+        op.f("ix_organization_assets_id"),
+        "organization_assets",
+        ["id"],
+        unique=False,
+    )
     op.create_table(
         "organization_meta",
         sa.Column("id", sa.Integer(), nullable=False),
@@ -112,10 +146,17 @@ def upgrade() -> None:
         sa.Column("presentation_links", sa.String(length=1000), nullable=True),
         sa.Column("registry_development", sa.Text(), nullable=True),
         sa.Column("other_notes", sa.Text(), nullable=True),
-        sa.ForeignKeyConstraint(["organization_id"], ["organizations.id"], ondelete="CASCADE"),
+        sa.ForeignKeyConstraint(
+            ["organization_id"], ["organizations.id"], ondelete="CASCADE"
+        ),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_index(op.f("ix_organization_meta_id"), "organization_meta", ["id"], unique=False)
+    op.create_index(
+        op.f("ix_organization_meta_id"),
+        "organization_meta",
+        ["id"],
+        unique=False,
+    )
     op.create_table(
         "organization_metrics",
         sa.Column("id", sa.Integer(), nullable=False),
@@ -132,27 +173,43 @@ def upgrade() -> None:
         sa.Column("investments", sa.Float(), nullable=True),
         sa.Column("export_volume", sa.Float(), nullable=True),
         sa.Column(
-            "created_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=True
+            "created_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=True,
         ),
         sa.Column("updated_at", sa.DateTime(timezone=True), nullable=True),
-        sa.ForeignKeyConstraint(["organization_id"], ["organizations.id"], ondelete="CASCADE"),
+        sa.ForeignKeyConstraint(
+            ["organization_id"], ["organizations.id"], ondelete="CASCADE"
+        ),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(
-        "ix_org_metrics_org_year", "organization_metrics", ["organization_id", "year"], unique=False
+        "ix_org_metrics_org_year",
+        "organization_metrics",
+        ["organization_id", "year"],
+        unique=False,
     )
     op.create_index(
-        op.f("ix_organization_metrics_id"), "organization_metrics", ["id"], unique=False
+        op.f("ix_organization_metrics_id"),
+        "organization_metrics",
+        ["id"],
+        unique=False,
     )
     op.create_index(
-        op.f("ix_organization_metrics_year"), "organization_metrics", ["year"], unique=False
+        op.f("ix_organization_metrics_year"),
+        "organization_metrics",
+        ["year"],
+        unique=False,
     )
     op.create_table(
         "organization_products",
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("organization_id", sa.Integer(), nullable=False),
         sa.Column("product_name", sa.String(length=500), nullable=True),
-        sa.Column("standardized_product", sa.String(length=500), nullable=True),
+        sa.Column(
+            "standardized_product", sa.String(length=500), nullable=True
+        ),
         sa.Column("okpd2_codes", sa.String(length=500), nullable=True),
         sa.Column("product_types", sa.String(length=500), nullable=True),
         sa.Column("product_catalog", sa.String(length=500), nullable=True),
@@ -162,11 +219,16 @@ def upgrade() -> None:
         sa.Column("export_volume_last_year", sa.Float(), nullable=True),
         sa.Column("export_countries", sa.String(length=1000), nullable=True),
         sa.Column("tnved_code", sa.String(length=100), nullable=True),
-        sa.ForeignKeyConstraint(["organization_id"], ["organizations.id"], ondelete="CASCADE"),
+        sa.ForeignKeyConstraint(
+            ["organization_id"], ["organizations.id"], ondelete="CASCADE"
+        ),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(
-        op.f("ix_organization_products_id"), "organization_products", ["id"], unique=False
+        op.f("ix_organization_products_id"),
+        "organization_products",
+        ["id"],
+        unique=False,
     )
     op.create_table(
         "organization_taxes",
@@ -181,30 +243,54 @@ def upgrade() -> None:
         sa.Column("transport_tax", sa.Float(), nullable=True),
         sa.Column("other_taxes", sa.Float(), nullable=True),
         sa.Column("excise", sa.Float(), nullable=True),
-        sa.ForeignKeyConstraint(["organization_id"], ["organizations.id"], ondelete="CASCADE"),
+        sa.ForeignKeyConstraint(
+            ["organization_id"], ["organizations.id"], ondelete="CASCADE"
+        ),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_index(op.f("ix_organization_taxes_id"), "organization_taxes", ["id"], unique=False)
     op.create_index(
-        op.f("ix_organization_taxes_year"), "organization_taxes", ["year"], unique=False
+        op.f("ix_organization_taxes_id"),
+        "organization_taxes",
+        ["id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_organization_taxes_year"),
+        "organization_taxes",
+        ["year"],
+        unique=False,
     )
     # ### end Alembic commands ###
 
 
 def downgrade() -> None:
     # ### commands auto generated by Alembic - please adjust! ###
-    op.drop_index(op.f("ix_organization_taxes_year"), table_name="organization_taxes")
-    op.drop_index(op.f("ix_organization_taxes_id"), table_name="organization_taxes")
+    op.drop_index(
+        op.f("ix_organization_taxes_year"), table_name="organization_taxes"
+    )
+    op.drop_index(
+        op.f("ix_organization_taxes_id"), table_name="organization_taxes"
+    )
     op.drop_table("organization_taxes")
-    op.drop_index(op.f("ix_organization_products_id"), table_name="organization_products")
+    op.drop_index(
+        op.f("ix_organization_products_id"), table_name="organization_products"
+    )
     op.drop_table("organization_products")
-    op.drop_index(op.f("ix_organization_metrics_year"), table_name="organization_metrics")
-    op.drop_index(op.f("ix_organization_metrics_id"), table_name="organization_metrics")
+    op.drop_index(
+        op.f("ix_organization_metrics_year"), table_name="organization_metrics"
+    )
+    op.drop_index(
+        op.f("ix_organization_metrics_id"), table_name="organization_metrics"
+    )
     op.drop_index("ix_org_metrics_org_year", table_name="organization_metrics")
     op.drop_table("organization_metrics")
-    op.drop_index(op.f("ix_organization_meta_id"), table_name="organization_meta")
+    op.drop_index(
+        op.f("ix_organization_meta_id"), table_name="organization_meta"
+    )
     op.drop_table("organization_meta")
-    op.drop_index(op.f("ix_organization_assets_id"), table_name="organization_assets")
+    op.drop_index(
+        op.f("ix_organization_assets_id"), table_name="organization_assets"
+    )
     op.drop_table("organization_assets")
     op.drop_index(op.f("ix_organizations_name"), table_name="organizations")
     op.drop_index(op.f("ix_organizations_inn"), table_name="organizations")
