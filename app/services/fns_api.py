@@ -64,6 +64,49 @@ class FNSAPIService:
             logger.error("fns_api_error", inn=inn, error=str(e))
             return None
     
+    async def get_financial_statements(self, inn: str) -> Optional[Dict[str, Any]]:
+        """
+        Fetch financial statements (бухгалтерская отчетность) from FNS by INN.
+        
+        Returns data from forms 1-4 (balance sheet, income statement, etc.)
+        Available from 2019 onwards.
+        
+        Args:
+            inn: Organization INN (10 digits, only for legal entities)
+            
+        Returns:
+            Financial statements data dict or None if not found
+        """
+        try:
+            logger.info("fns_api_bo_request", inn=inn)
+            
+            # Make request to FNS API
+            url = f"{self.BASE_URL}/bo"
+            params = {
+                "req": inn,
+                "key": self.api_key
+            }
+            
+            response = await self.client.get(url, params=params)
+            response.raise_for_status()
+            
+            data = response.json()
+            
+            # Check if data exists
+            if not data or inn not in data:
+                logger.warning("fns_api_bo_no_data", inn=inn)
+                return None
+            
+            logger.info("fns_api_bo_success", inn=inn, years=list(data[inn].keys()) if data.get(inn) else [])
+            return data[inn]
+            
+        except httpx.HTTPStatusError as e:
+            logger.error("fns_api_bo_http_error", inn=inn, status=e.response.status_code, error=str(e))
+            return None
+        except Exception as e:
+            logger.error("fns_api_bo_error", inn=inn, error=str(e))
+            return None
+    
     def _normalize_fns_data(self, fns_data: Dict[str, Any]) -> Dict[str, Any]:
         """
         Normalize FNS API response to application format.

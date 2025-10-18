@@ -42,7 +42,8 @@
  .back-btn,
  .edit-btn,
  .delete-btn,
- .fns-btn {
+ .fns-btn,
+ .import-btn {
  display: inline-flex;
  align-items: center;
  gap: 8px;
@@ -57,7 +58,8 @@
 
  .back-btn:hover,
  .edit-btn:hover,
- .fns-btn:hover {
+ .fns-btn:hover,
+ .import-btn:hover {
  background: rgba(255, 255, 255, 0.3);
  }
 
@@ -70,6 +72,19 @@
  }
 
  .fns-btn:disabled {
+ opacity: 0.5;
+ cursor: not-allowed;
+ }
+
+ .import-btn {
+ background: rgba(40, 167, 69, 0.8);
+ }
+
+ .import-btn:hover {
+ background: rgba(40, 167, 69, 1);
+ }
+
+ .import-btn:disabled {
  opacity: 0.5;
  cursor: not-allowed;
  }
@@ -276,6 +291,7 @@
  <a href="/organizations/{{ org.id }}/analytics" class="edit-btn">Аналитика</a>
  <a href="/organizations/{{ org.id }}/edit" class="edit-btn">Редактировать</a>
  <button onclick="updateFromFNS()" class="fns-btn" id="fnsBtn">⟳ ОБНОВИТЬ ИЗ ФНС</button>
+ <button onclick="importFinancials()" class="import-btn" id="importBtn">📊 ИМПОРТ БУХОТЧЁТНОСТИ</button>
  <button onclick="deleteOrganization()" class="delete-btn"> Удалить</button>
 </div>
  <h1 class="org-title">{{ org.name }}</h1>
@@ -687,6 +703,52 @@
  }
  } catch (error) {
  alert('Ошибка при обновлении из ФНС: ' + error.message);
+ btn.disabled = false;
+ btn.textContent = originalText;
+ }
+ }
+
+ async function importFinancials() {
+ const btn = document.getElementById('importBtn');
+ const originalText = btn.textContent;
+ 
+ if (!confirm('Импортировать бухгалтерскую отчётность из базы ФНС?\n\nДанные будут загружены в раздел "Финансовые показатели".\nДоступна отчётность с 2019 года.')) {
+ return;
+ }
+
+ try {
+ // Disable button and show loading state
+ btn.disabled = true;
+ btn.textContent = '⟳ Загрузка...';
+
+ const response = await fetch('/organizations/{{ org.id }}/import-financials', {
+ method: 'POST',
+ headers: {
+ 'Content-Type': 'application/json'
+ }
+ });
+
+ const data = await response.json();
+
+ if (response.ok) {
+ let message = data.message + '\n\n';
+ message += 'Всего периодов: ' + data.total_years;
+ if (data.imported_years.length > 0) {
+ message += '\nИмпортированы годы: ' + data.imported_years.join(', ');
+ }
+ if (data.updated_years.length > 0) {
+ message += '\nОбновлены годы: ' + data.updated_years.join(', ');
+ }
+ alert(message);
+ // Reload page to show updated data
+ window.location.reload();
+ } else {
+ alert('Ошибка при импорте бухотчётности: ' + (data.detail || 'Неизвестная ошибка'));
+ btn.disabled = false;
+ btn.textContent = originalText;
+ }
+ } catch (error) {
+ alert('Ошибка при импорте бухотчётности: ' + error.message);
  btn.disabled = false;
  btn.textContent = originalText;
  }

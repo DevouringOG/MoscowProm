@@ -833,6 +833,118 @@ async def update_organization_from_fns(
         raise HTTPException(status_code=500, detail=f"Failed to update from FNS: {str(e)}")
 
 
+@app.post("/organizations/{organization_id}/import-financials")
+async def import_financials_from_fns(
+    organization_id: int,
+    db: Session = Depends(get_db)
+):
+    """
+    Import financial statements from FNS API and populate metrics table.
+    """
+    org = db.query(Organization).filter(Organization.id == organization_id).first()
+    
+    if not org:
+        raise HTTPException(status_code=404, detail="Organization not found")
+    
+    if not org.inn:
+        raise HTTPException(status_code=400, detail="Organization has no INN")
+    
+    # Check INN length - financial statements only available for legal entities (10 digits)
+    if len(org.inn) != 10:
+        raise HTTPException(status_code=400, detail="Financial statements are only available for legal entities (ЮЛ)")
+    
+    try:
+        # Check if FNS API is enabled
+        fns_enabled = getattr(settings.get('fns_api', {}), 'enabled', False)
+        if not fns_enabled:
+            raise HTTPException(status_code=503, detail="FNS API is disabled")
+        
+        # Get FNS API configuration
+        fns_config = settings.get('fns_api', {})
+        api_key = getattr(fns_config, 'api_key', None)
+        timeout = getattr(fns_config, 'timeout', 30)
+        
+        if not api_key:
+            raise HTTPException(status_code=503, detail="FNS API key not configured")
+        
+        # Get FNS service
+        fns_service = get_fns_service(api_key=api_key, timeout=timeout)
+        
+        # Fetch financial statements from FNS
+        logger.info("fetching_fns_financials", organization_id=organization_id, inn=org.inn)
+        financial_data = await fns_service.get_financial_statements(org.inn)
+        
+        if not financial_data:
+            raise HTTPException(status_code=404, detail="Financial statements not found in FNS database")
+        
+        # Process financial data and update metrics
+        imported_years = []
+        updated_years = []
+        
+        for year_str, year_data in financial_data.items():
+            try:
+                year = int(year_str)
+            except ValueError:
+                continue
+            
+            # Check if metrics for this year already exist
+            existing_metric = db.query(OrganizationMetrics).filter(
+                OrganizationMetrics.organization_id == organization_id,
+                OrganizationMetrics.year == year
+            ).first()
+            
+            # Extract financial data from FNS codes
+            # Форма 1 (Бухгалтерский баланс)
+            # Форма 2 (Отчет о финансовых результатах)
+            revenue = year_data.get('2110')  # Выручка
+            profit = year_data.get('2400')   # Чистая прибыль
+            
+            if existing_metric:
+                # Update existing
+                if revenue is not None:
+                    existing_metric.revenue = float(revenue) * 1000  # Convert from thousands to rubles
+                if profit is not None:
+                    existing_metric.profit = float(profit) * 1000
+                updated_years.append(year)
+            else:
+                # Create new
+                new_metric = OrganizationMetrics(
+                    organization_id=organization_id,
+                    year=year,
+                    revenue=float(revenue) * 1000 if revenue is not None else None,
+                    profit=float(profit) * 1000 if profit is not None else None
+                )
+                db.add(new_metric)
+                imported_years.append(year)
+        
+        db.commit()
+        logger.info("financials_imported_from_fns", 
+                   organization_id=organization_id, 
+                   inn=org.inn,
+                   imported_years=imported_years,
+                   updated_years=updated_years)
+        
+        return JSONResponse(content={
+            "status": "success",
+            "message": f"Бухгалтерская отчётность импортирована из ФНС",
+            "organization_id": organization_id,
+            "imported_years": sorted(imported_years),
+            "updated_years": sorted(updated_years),
+            "total_years": len(imported_years) + len(updated_years),
+            "inn": org.inn
+        })
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        logger.error("financials_import_failed", 
+                    organization_id=organization_id, 
+                    inn=org.inn,
+                    error=str(e))
+        raise HTTPException(status_code=500, detail=f"Failed to import financials from FNS: {str(e)}")
+
+
 @app.get("/analytics", response_class=HTMLResponse)
 async def analytics(request: Request, db: Session = Depends(get_db)):
     """
