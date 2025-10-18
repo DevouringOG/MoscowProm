@@ -3,78 +3,136 @@
 <head>
  <meta charset="UTF-8">
  <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <title>Загрузка данных предприятий</title>
+ <title>Загрузка данных - MosProm</title>
  <link rel="stylesheet" href="/static/css/main.css">
  <style>
- * {
+ body {
+ background: var(--body-bg);
  margin: 0;
  padding: 0;
- box-sizing: border-box;
  }
 
- body {
- font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
- background: var(--accent-dark);
- min-height: 100vh;
- display: flex;
- align-items: center;
- justify-content: center;
- padding: 20px;
- }
-
- .container {
+ .page-header {
  background: var(--card-bg);
- box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
- max-width: 1200px;
- width: 100%;
- padding: 40px;
+ border-bottom: 1px solid var(--border-color);
+ padding: 24px;
+ margin-bottom: 24px;
+ display: flex;
+ justify-content: space-between;
+ align-items: center;
  }
 
- h1 {
+ .page-title {
+ font-size: 24px;
+ font-weight: 700;
  color: var(--text-primary);
- margin-bottom: 10px;
- font-size: 28px;
  }
 
- .subtitle {
+ .header-actions {
+ display: flex;
+ gap: 12px;
+ }
+
+ .btn-secondary {
+ padding: 12px 24px;
+ background: transparent;
+ color: var(--text-primary);
+ border: 2px solid var(--border-color);
+ font-size: 14px;
+ font-weight: 500;
+ cursor: pointer;
+ text-decoration: none;
+ display: inline-flex;
+ align-items: center;
+ gap: 8px;
+ transition: all 0.3s ease;
+ }
+
+ .btn-secondary:hover {
+ border-color: var(--accent-dark);
+ color: var(--accent-dark);
+ }
+
+ .main-content {
+ max-width: 1400px;
+ margin: 0 auto;
+ padding: 0 24px 40px 24px;
+ }
+
+ .upload-card {
+ background: var(--card-bg);
+ border: 1px solid var(--border-color);
+ padding: 40px;
+ margin-bottom: 24px;
+ }
+
+ .upload-card {
+ background: var(--card-bg);
+ border: 1px solid var(--border-color);
+ padding: 40px;
+ margin-bottom: 24px;
+ }
+
+ .card-title {
+ font-size: 18px;
+ font-weight: 600;
+ color: var(--text-primary);
+ margin-bottom: 8px;
+ }
+
+ .card-subtitle {
  color: var(--text-secondary);
  margin-bottom: 30px;
  font-size: 14px;
  }
 
  .upload-area {
- border: 2px dashed #667eea;padding: 40px;
+ border: 2px dashed var(--border-color);
+ padding: 60px 40px;
  text-align: center;
  transition: all 0.3s;
  cursor: pointer;
  margin-bottom: 20px;
+ background: var(--body-bg);
  }
 
  .upload-area:hover {
  border-color: var(--accent-dark);
- background: #f8f9ff;
+ background: var(--accent-light);
  }
 
  .upload-area.dragover {
- background: #f0f2ff;
+ background: var(--accent-light);
  border-color: var(--accent-dark);
+ border-style: solid;
  }
 
  .upload-icon {
- font-size: 48px;
- margin-bottom: 16px;
+ font-size: 64px;
+ margin-bottom: 20px;
+ color: var(--text-secondary);
  }
 
  .upload-text {
- color: var(--text-secondary);
+ color: var(--text-primary);
  margin-bottom: 8px;
+ font-size: 16px;
+ font-weight: 500;
+ }
+
+ .upload-hint {
+ color: var(--text-secondary);
+ font-size: 13px;
  }
 
  .file-info {
  color: var(--accent-dark);
- font-weight: 500;
- margin-top: 12px;
+ font-weight: 600;
+ margin-top: 16px;
  display: none;
+ padding: 12px;
+ background: var(--accent-light);
+ border-radius: 4px;
  }
 
  input[type="file"] {
@@ -83,22 +141,27 @@
 
  .btn {
  width: 100%;
- padding: 14px;
+ padding: 16px;
  background: var(--accent-dark);
  color: var(--card-bg);
- border: none;font-size: 16px;
+ border: none;
+ font-size: 16px;
  font-weight: 600;
  cursor: pointer;
- transition: transform 0.2s, box-shadow 0.2s;
+ transition: all 0.2s;
  }
 
- .btn:hover {box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+ .btn:hover {
+ transform: translateY(-1px);
+ box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
  }
 
  .btn:disabled {
  background: #ccc;
  cursor: not-allowed;
  transform: none;
+ box-shadow: none;
+ }
  }
 
  .progress {
@@ -127,27 +190,39 @@
  }
 
  .result {
- margin-top: 20px;
- padding: 20px;
+ background: var(--card-bg);
+ border: 1px solid var(--border-color);
+ padding: 0;
  display: none;
  }
 
  .result.success {
- background: #d4edda;
- border: 1px solid #c3e6cb;
- color: #155724;
+ border-color: var(--border-color);
  }
 
  .result.error {
- background: #f8d7da;
- border: 1px solid #f5c6cb;
- color: #721c24;
+ border-color: var(--border-color);
  }
 
  .result-title {
  font-weight: 700;
- margin-bottom: 16px;
+ margin-bottom: 0;
  font-size: 18px;
+ padding: 20px 40px;
+ background: #28a745;
+ color: #fff;
+ text-align: center;
+ letter-spacing: 1px;
+ border-bottom: 2px solid #1e7e34;
+ }
+
+ .result.error .result-title {
+ background: #dc3545;
+ border-color: #bd2130;
+ }
+
+ .result-content {
+ padding: 40px;
  }
 
  .result-stats {
@@ -158,21 +233,26 @@
  }
 
  .stat-card {
- background: rgba(255, 255, 255, 0.5);
- padding: 12px;
+ background: #f8f9fa;
+ padding: 16px;
  text-align: center;
+ border: 1px solid #e0e0e0;
  }
 
  .stat-value {
- font-size: 24px;
+ font-size: 28px;
  font-weight: 700;
  display: block;
- margin-bottom: 4px;
+ margin-bottom: 6px;
+ color: #000;
  }
 
  .stat-label {
  font-size: 12px;
- opacity: 0.8;
+ color: #666;
+ text-transform: uppercase;
+ letter-spacing: 0.5px;
+ font-weight: 600;
  }
 
  .result-details {
@@ -292,17 +372,15 @@
  }
 
  .organizations-list {
- margin-top: 20px;
- max-height: 400px;
- overflow-y: auto;
- border: 1px solid #c3e6cb;
- background: rgba(255, 255, 255, 0.5);
+ margin-top: 24px;
+ border: 1px solid var(--border-color);
+ background: var(--body-bg);
  }
 
  .org-item {
- padding: 16px;
- border-bottom: 1px solid #ddd;
- background: #fff;
+ padding: 20px;
+ border-bottom: 1px solid var(--border-color);
+ background: var(--card-bg);
  }
 
  .org-item:last-child {
@@ -310,7 +388,7 @@
  }
 
  .org-item:hover {
- background: #fafafa;
+ background: var(--accent-light);
  }
 
  .org-header {
@@ -459,32 +537,45 @@
 </style>
 </head>
 <body>
- <div class="container">
- <h1>Загрузка данных предприятий</h1>
- <p class="subtitle">Загрузите Excel файл с данными о предприятиях (208 столбцов)</p>
+ <!-- Page Header -->
+ <div class="page-header">
+ <h1 class="page-title">Загрузка данных предприятий</h1>
+ <div class="header-actions">
+ <a href="/" class="btn-secondary">Главная</a>
+ <a href="/organizations" class="btn-secondary">К списку</a>
+ <a href="/analytics" class="btn-secondary">Аналитика</a>
+ </div>
+ </div>
+
+ <div class="main-content">
+ <!-- Upload Card -->
+ <div class="upload-card">
+ <h2 class="card-title">Выбор файла</h2>
+ <p class="card-subtitle">Загрузите Excel файл с данными о предприятиях (формат .xlsx или .xls)</p>
 
  <form id="uploadForm">
  <div class="upload-area" id="uploadArea">
- <div class="upload-icon"></div>
- <div class="upload-text">Нажмите или перетащите файл Excel</div>
+ <div class="upload-icon">⬆</div>
+ <div class="upload-text">Нажмите для выбора или перетащите файл сюда</div>
+ <div class="upload-hint">Поддерживаются файлы Excel (.xlsx, .xls)</div>
  <div class="file-info" id="fileInfo"></div>
  <input type="file" id="fileInput" accept=".xlsx,.xls" required>
-</div>
+ </div>
 
  <button type="submit" class="btn" id="submitBtn">Загрузить и обработать</button>
-</form>
+ </form>
 
  <div class="progress" id="progress">
  <div class="progress-bar">
  <div class="progress-fill" id="progressFill"></div>
-</div>
+ </div>
  <div class="progress-text" id="progressText">Обработка файла...</div>
-</div>
+ </div>
+ </div>
 
+ <!-- Results Card -->
  <div class="result" id="result"></div>
-
- <a href="/" class="back-link">← Вернуться на главную</a>
-</div>
+ </div>
 
  <script>
  const uploadArea = document.getElementById('uploadArea');
@@ -670,6 +761,7 @@
  result.className = 'result success';
  result.innerHTML = `
  <div class="result-title">ФАЙЛ УСПЕШНО ОБРАБОТАН</div>
+ <div class="result-content">
  <div class="result-stats">
  <div class="stat-card">
  <span class="stat-value">${data.organizations_count}</span>
@@ -699,6 +791,7 @@
  <div class="action-buttons">
  <a href="/organizations" class="btn-view">Перейти к списку предприятий</a>
  <button onclick="resetForm()" class="btn-upload-more">Загрузить ещё файл</button>
+ </div>
  </div>
  `;
  result.style.display = 'block';
