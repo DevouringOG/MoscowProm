@@ -26,75 +26,83 @@
  overflow: hidden;
  }
 
- .header {
- background: var(--accent-dark);
- color: var(--card-bg);
- padding: 30px;
+ /* Page Header */
+ .page-header {
+ background: var(--card-bg);
+ border-bottom: 1px solid var(--border-color);
+ padding: 24px;
+ margin-bottom: 0;
+ }
+
+ .page-title {
+ font-size: 24px;
+ font-weight: 700;
+ color: var(--text-primary);
+ text-transform: uppercase;
+ letter-spacing: 0.5px;
+ margin-bottom: 8px;
+ }
+
+ .page-subtitle {
+ font-size: 14px;
+ color: var(--text-secondary);
+ display: flex;
+ gap: 16px;
+ align-items: center;
+ margin-top: 8px;
  }
 
  .header-actions {
  display: flex;
- gap: 10px;
- margin-bottom: 20px;
+ gap: 12px;
+ margin-top: 16px;
  flex-wrap: wrap;
  }
 
- .back-btn,
- .edit-btn,
- .delete-btn,
- .fns-btn,
- .import-btn {
+ .btn-secondary {
+ padding: 12px 24px;
+ background: transparent;
+ color: var(--text-primary);
+ border: 2px solid var(--border-color);
+ font-size: 14px;
+ font-weight: 500;
+ cursor: pointer;
+ text-decoration: none;
  display: inline-flex;
  align-items: center;
  gap: 8px;
- color: var(--card-bg);
- text-decoration: none;
- padding: 8px 16px;
- background: rgba(255, 255, 255, 0.2);transition: background 0.3s ease;
- border: none;
- cursor: pointer;
+ transition: all 0.3s ease;
+ }
+
+ .btn-secondary:hover {
+ border-color: var(--accent-dark);
+ color: var(--accent-dark);
+ }
+
+ .btn-danger {
+ padding: 12px 24px;
+ background: transparent;
+ color: #dc3545;
+ border: 2px solid #dc3545;
  font-size: 14px;
+ font-weight: 500;
+ cursor: pointer;
+ text-decoration: none;
+ display: inline-flex;
+ align-items: center;
+ gap: 8px;
+ transition: all 0.3s ease;
  }
 
- .back-btn:hover,
- .edit-btn:hover,
- .fns-btn:hover,
- .import-btn:hover {
- background: rgba(255, 255, 255, 0.3);
+ .btn-danger:hover {
+ background: #dc3545;
+ color: white;
  }
 
- .fns-btn {
- background: rgba(0, 123, 255, 0.8);
- }
-
- .fns-btn:hover {
- background: rgba(0, 123, 255, 1);
- }
-
- .fns-btn:disabled {
+ .btn-secondary:disabled,
+ .btn-danger:disabled {
  opacity: 0.5;
  cursor: not-allowed;
- }
-
- .import-btn {
- background: rgba(40, 167, 69, 0.8);
- }
-
- .import-btn:hover {
- background: rgba(40, 167, 69, 1);
- }
-
- .import-btn:disabled {
- opacity: 0.5;
- cursor: not-allowed;
- }
-
- .delete-btn {
- background: rgba(220, 53, 69, 0.8);
- }
-
- .delete-btn:hover {
- background: rgba(220, 53, 69, 1);
  }
 
  .org-title {
@@ -285,23 +293,25 @@
 </head>
 <body>
  <div class="container">
- <div class="header">
- <div class="header-actions">
- <a href="/organizations" class="back-btn">← Назад к списку</a>
- <a href="/organizations/{{ org.id }}/analytics" class="edit-btn">Аналитика</a>
- <a href="/organizations/{{ org.id }}/edit" class="edit-btn">Редактировать</a>
- <button onclick="updateFromFNS()" class="fns-btn" id="fnsBtn">⟳ ОБНОВИТЬ ИЗ ФНС</button>
- <button onclick="importFinancials()" class="import-btn" id="importBtn">📊 ИМПОРТ БУХОТЧЁТНОСТИ</button>
- <button onclick="deleteOrganization()" class="delete-btn"> Удалить</button>
-</div>
- <h1 class="org-title">{{ org.name }}</h1>
- <div class="org-subtitle">
- <span class="inn-badge">ИНН: {{ org.inn }}</span>
+ <div class="page-header">
+ <div>
+ <h1 class="page-title">{{ org.name }}</h1>
+ <div class="page-subtitle">
+ <span>ИНН: {{ org.inn }}</span>
  {% if org.status_final %}
  <span>{{ org.status_final }}</span>
  {% endif %}
-</div>
-</div>
+ </div>
+ <div class="header-actions">
+ <a href="/organizations" class="btn-secondary">К СПИСКУ</a>
+ <a href="/organizations/{{ org.id }}/analytics" class="btn-secondary">АНАЛИТИКА</a>
+ <a href="/organizations/{{ org.id }}/edit" class="btn-secondary">РЕДАКТИРОВАТЬ</a>
+ <button onclick="updateFromFNS()" class="btn-secondary" id="fnsBtn">ОБНОВИТЬ ИЗ ФНС</button>
+ <button onclick="importFinancials()" class="btn-secondary" id="importBtn">ИМПОРТ БУХОТЧЁТНОСТИ</button>
+ <button onclick="deleteOrganization()" class="btn-danger">УДАЛИТЬ</button>
+ </div>
+ </div>
+ </div>
 
  <div class="tabs">
  <button class="tab active" onclick="showTab('general')">Общие данные</button>

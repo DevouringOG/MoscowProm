@@ -6,6 +6,13 @@
  <title>Список организаций - MosProm</title>
  <link rel="stylesheet" href="/static/css/main.css">
  <style>
+ body {
+ background: var(--body-bg);
+ margin: 0;
+ padding: 0;
+ }
+
+ /* Page Header */
  .page-header {
  background: var(--card-bg);
  border-bottom: 1px solid var(--border-color);
@@ -20,6 +27,8 @@
  font-size: 24px;
  font-weight: 700;
  color: var(--text-primary);
+ text-transform: uppercase;
+ letter-spacing: 0.5px;
  }
 
  .header-actions {
@@ -27,9 +36,12 @@
  gap: 12px;
  }
 
- .btn {
+ .btn-secondary {
  padding: 12px 24px;
- border: none;font-size: 14px;
+ background: transparent;
+ color: var(--text-primary);
+ border: 2px solid var(--border-color);
+ font-size: 14px;
  font-weight: 500;
  cursor: pointer;
  text-decoration: none;
@@ -39,22 +51,9 @@
  transition: all 0.3s ease;
  }
 
- .btn-primary {
- background: var(--card-bg);
- color: var(--accent-dark);
- }
-
- .btn-primary:hover {box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
- }
-
- .btn-secondary {
- background: rgba(255, 255, 255, 0.2);
- color: var(--card-bg);
- border: 2px solid white;
- }
-
  .btn-secondary:hover {
- background: rgba(255, 255, 255, 0.3);
+ border-color: var(--accent-dark);
+ color: var(--accent-dark);
  }
 
  .search-section {
@@ -487,16 +486,16 @@
 </style>
 </head>
 <body>
+ <div class="page-header">
+ <h1 class="page-title">СПИСОК ПРЕДПРИЯТИЙ</h1>
+ <div class="header-actions">
+ <a href="/analytics" class="btn-secondary">АНАЛИТИКА</a>
+ <a href="/organizations/create" class="btn-secondary">ДОБАВИТЬ</a>
+ <a href="/upload" class="btn-secondary">ЗАГРУЗКА</a>
+ </div>
+ </div>
+
  <div class="container">
- <div class="header">
- <h1>Реестр промышленных предприятий</h1>
- <div class="header-buttons">
- <a href="/" class="btn btn-secondary">Главная</a>
- <a href="/analytics" class="btn btn-secondary">Аналитика</a>
- <a href="/upload" class="btn btn-secondary">Загрузить данные</a>
- <a href="/organizations/create" class="btn btn-primary">Добавить</a>
-</div>
-</div>
 
  <div class="search-section">
  <form action="/organizations" method="get">
