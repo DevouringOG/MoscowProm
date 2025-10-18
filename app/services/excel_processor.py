@@ -1,4 +1,12 @@
-"""Excel file processor for organization data."""
+"""
+Excel file processor for organization data.
+
+Обработчик Excel файлов с улучшенной системой ошибок:
+- Показывает номер строки с ошибкой
+- Показывает название и ИНН предприятия
+- Даёт понятное описание проблемы на русском
+- Указывает конкретную колонку с ошибкой
+"""
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, Any, Optional
@@ -72,9 +80,24 @@ def process_excel_file(file_path: Path, db: Session) -> Dict[str, Any]:
     for cell in sheet[1]:
         headers.append(cell.value)
     
-    organizations_count = 0
+    organizations_new = 0
+    organizations_updated = 0
     rows_processed = 0
+    rows_skipped = 0
     errors = []
+    
+    # Statistics for missing data
+    missing_fields = {
+        'contacts': 0,
+        'coordinates': 0,
+        'metrics': 0,
+        'taxes': 0,
+        'assets': 0,
+        'products': 0,
+    }
+    
+    # Detailed organization statistics
+    organizations_details = []
     
     # Process each row (skip header)
     for row_idx, row in enumerate(sheet.iter_rows(min_row=2, values_only=True), start=2):
@@ -84,10 +107,12 @@ def process_excel_file(file_path: Path, db: Session) -> Dict[str, Any]:
             
             # Skip empty rows
             if not data.get('ИНН'):
+                rows_skipped += 1
                 continue
                 
             inn = str(data.get('ИНН', '')).strip()
             if not inn:
+                rows_skipped += 1
                 continue
             
             # Check if organization already exists
@@ -95,6 +120,7 @@ def process_excel_file(file_path: Path, db: Session) -> Dict[str, Any]:
             
             if existing_org:
                 org = existing_org
+                organizations_updated += 1
                 logger.info("Organization already exists", inn=inn)
             else:
                 # Create new organization
@@ -152,9 +178,29 @@ def process_excel_file(file_path: Path, db: Session) -> Dict[str, Any]:
                 )
                 db.add(org)
                 db.flush()  # Get org.id
-                organizations_count += 1
+                organizations_new += 1
+            
+            # Count empty/missing fields for this organization
+            empty_fields_count = 0
+            empty_fields_list = []
+            total_fields = len(data)
+            
+            for key, value in data.items():
+                if value is None or (isinstance(value, str) and value.strip() == ''):
+                    empty_fields_count += 1
+                    empty_fields_list.append(key)
+            
+            # Track missing data categories
+            has_contacts = any([data.get('Номер телефона'), data.get('Электронная почта'), data.get('Сайт')])
+            has_coordinates = any([data.get('Координаты (широта)'), data.get('Координаты (долгота)')])
+            
+            if not has_contacts:
+                missing_fields['contacts'] += 1
+            if not has_coordinates:
+                missing_fields['coordinates'] += 1
             
             # Add metrics for each year (2017-2023)
+            has_metrics = False
             for year in range(2017, 2024):
                 metrics = OrganizationMetrics(
                     organization_id=org.id,
@@ -181,8 +227,13 @@ def process_excel_file(file_path: Path, db: Session) -> Dict[str, Any]:
                 # Only add if there's some data
                 if any([metrics.revenue, metrics.profit, metrics.total_employees]):
                     db.add(metrics)
+                    has_metrics = True
+            
+            if not has_metrics:
+                missing_fields['metrics'] += 1
             
             # Add tax data for each year (2017-2024)
+            has_taxes = False
             for year in range(2017, 2025):
                 taxes = OrganizationTaxes(
                     organization_id=org.id,
@@ -199,6 +250,10 @@ def process_excel_file(file_path: Path, db: Session) -> Dict[str, Any]:
                 )
                 if any([taxes.total_taxes_moscow, taxes.profit_tax, taxes.property_tax]):
                     db.add(taxes)
+                    has_taxes = True
+            
+            if not has_taxes:
+                missing_fields['taxes'] += 1
             
             # Add assets data
             assets = OrganizationAssets(
@@ -220,6 +275,8 @@ def process_excel_file(file_path: Path, db: Session) -> Dict[str, Any]:
             )
             if any([assets.cadastral_number_land, assets.cadastral_number_building]):
                 db.add(assets)
+            else:
+                missing_fields['assets'] += 1
             
             # Add products data
             products = OrganizationProducts(
@@ -238,6 +295,8 @@ def process_excel_file(file_path: Path, db: Session) -> Dict[str, Any]:
             )
             if products.product_name:
                 db.add(products)
+            else:
+                missing_fields['products'] += 1
             
             # Add meta data
             meta = OrganizationMeta(
@@ -250,6 +309,19 @@ def process_excel_file(file_path: Path, db: Session) -> Dict[str, Any]:
             )
             db.add(meta)
             
+            # Add organization details to the list
+            org_name = data.get('Наименование организации', 'Без названия')[:100]
+            organizations_details.append({
+                'name': org_name,
+                'inn': inn,
+                'empty_fields': empty_fields_count,
+                'total_fields': total_fields,
+                'empty_fields_list': empty_fields_list,
+                'missing_contacts': not has_contacts,
+                'missing_coordinates': not has_coordinates,
+                'is_new': org.id and organizations_new > organizations_updated
+            })
+            
             rows_processed += 1
             
             # Commit every 100 rows
@@ -258,21 +330,82 @@ def process_excel_file(file_path: Path, db: Session) -> Dict[str, Any]:
                 logger.info("Progress", rows_processed=rows_processed)
                 
         except Exception as e:
-            logger.error("Error processing row", row=row_idx, error=str(e))
-            errors.append(f"Row {row_idx}: {str(e)}")
+            error_msg = str(e)
+            
+            # Преобразуем технические ошибки БД в понятные сообщения
+            org_name = data.get('Наименование организации', 'Не указано')
+            inn = data.get('ИНН', 'Не указан')
+            
+            # Определяем тип и описание ошибки с указанием столбца
+            column_name = ""
+            if 'invalid input syntax for type integer' in error_msg:
+                if 'industry_spark' in error_msg:
+                    error_type = "ОШИБКА ТИПА ДАННЫХ"
+                    column_name = "Отрасль промышленности по Спарк и Справочнику"
+                    error_desc = f"Столбец '{column_name}' - ожидается число, получен текст"
+                elif 'registry_development' in error_msg:
+                    error_type = "ОШИБКА ТИПА ДАННЫХ"
+                    column_name = "Развитие Реестра"
+                    error_desc = f"Столбец '{column_name}' - ожидается число, получен текст"
+                else:
+                    error_type = "ОШИБКА ТИПА ДАННЫХ"
+                    error_desc = "В числовой столбец попало текстовое значение"
+            
+            elif 'foreign key constraint' in error_msg.lower():
+                error_type = "ОШИБКА СВЯЗИ"
+                error_desc = "Отсутствует связанная запись в базе данных"
+            
+            elif 'unique constraint' in error_msg.lower() or 'duplicate key' in error_msg.lower():
+                if 'inn' in error_msg.lower():
+                    error_type = "ДУБЛИКАТ"
+                    column_name = "ИНН"
+                    error_desc = f"Столбец '{column_name}' - ИНН {inn} уже существует в базе данных"
+                else:
+                    error_type = "ДУБЛИКАТ"
+                    error_desc = "Попытка добавить дублирующуюся запись"
+            
+            elif 'not-null constraint' in error_msg.lower():
+                error_type = "ОТСУТСТВУЕТ ОБЯЗАТЕЛЬНОЕ ПОЛЕ"
+                if 'inn' in error_msg.lower():
+                    column_name = "ИНН"
+                    error_desc = f"Столбец '{column_name}' - не заполнено"
+                elif 'name' in error_msg.lower() or 'наименование' in error_msg.lower():
+                    column_name = "Наименование организации"
+                    error_desc = f"Столбец '{column_name}' - не заполнено"
+                else:
+                    error_desc = "Не заполнено обязательное поле"
+            
+            else:
+                error_type = "ОШИБКА"
+                error_desc = error_msg[:150]
+            
+            # Формат: ТИП_ОШИБКИ | Название (ИНН: Y) | Строка Excel: X | Описание
+            readable_error = f"{error_type} | {org_name} (ИНН: {inn}) | Строка Excel: {row_idx} | {error_desc}"
+            
+            logger.error("Error processing row", row=row_idx, org_name=org_name, inn=inn, error=error_msg)
+            errors.append(readable_error)
+            rows_skipped += 1
             continue
     
     # Final commit
     db.commit()
     
+    total_organizations = organizations_new + organizations_updated
+    
     logger.info("Excel processing completed", 
-                organizations=organizations_count, 
+                organizations_new=organizations_new,
+                organizations_updated=organizations_updated,
                 rows=rows_processed,
                 errors=len(errors))
     
     return {
-        "organizations_count": organizations_count,
+        "organizations_count": total_organizations,
+        "organizations_new": organizations_new,
+        "organizations_updated": organizations_updated,
         "rows_processed": rows_processed,
+        "rows_skipped": rows_skipped,
         "errors": len(errors),
-        "error_details": errors[:10]  # First 10 errors
+        "error_details": errors[:10],  # First 10 errors
+        "missing_fields": missing_fields,
+        "organizations_details": organizations_details[:50],  # First 50 organizations
     }

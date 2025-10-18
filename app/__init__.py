@@ -111,8 +111,24 @@ async def upload_file(
         return JSONResponse(content=result)
         
     except Exception as e:
-        logger.error("file_processing_failed", error=str(e))
-        raise HTTPException(status_code=500, detail=str(e))
+        error_msg = str(e)
+        
+        # Улучшенные сообщения об ошибках
+        if 'invalid input syntax for type integer' in error_msg:
+            user_message = "ОШИБКА: В числовую колонку попало текстовое значение. Проверьте колонки с числовыми данными (отрасль, реестр и др.)"
+        elif 'foreign key constraint' in error_msg.lower():
+            user_message = "ОШИБКА: Нарушена целостность базы данных"
+        elif 'unique constraint' in error_msg.lower() or 'duplicate key' in error_msg.lower():
+            user_message = "ОШИБКА: Некоторые ИНН уже существуют в базе"
+        elif 'not-null constraint' in error_msg.lower():
+            user_message = "ОШИБКА: Отсутствует ИНН или Название у одного или нескольких предприятий"
+        elif 'no such file' in error_msg.lower() or 'cannot open' in error_msg.lower():
+            user_message = "ОШИБКА: Не удалось открыть Excel файл. Убедитесь, что файл не поврежден"
+        else:
+            user_message = f"ОШИБКА ОБРАБОТКИ: {error_msg[:200]}"
+        
+        logger.error("file_processing_failed", error=error_msg, user_message=user_message)
+        raise HTTPException(status_code=500, detail=user_message)
     finally:
         # Clean up uploaded file
         try:

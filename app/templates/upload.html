@@ -23,8 +23,9 @@
  }
 
  .container {
- background: var(--card-bg);box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
- max-width: 600px;
+ background: var(--card-bg);
+ box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+ max-width: 1200px;
  width: 100%;
  padding: 40px;
  }
@@ -127,7 +128,8 @@
 
  .result {
  margin-top: 20px;
- padding: 16px;display: none;
+ padding: 20px;
+ display: none;
  }
 
  .result.success {
@@ -143,13 +145,304 @@
  }
 
  .result-title {
- font-weight: 600;
- margin-bottom: 8px;
+ font-weight: 700;
+ margin-bottom: 16px;
+ font-size: 18px;
+ }
+
+ .result-stats {
+ display: grid;
+ grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+ gap: 12px;
+ margin-bottom: 16px;
+ }
+
+ .stat-card {
+ background: rgba(255, 255, 255, 0.5);
+ padding: 12px;
+ text-align: center;
+ }
+
+ .stat-value {
+ font-size: 24px;
+ font-weight: 700;
+ display: block;
+ margin-bottom: 4px;
+ }
+
+ .stat-label {
+ font-size: 12px;
+ opacity: 0.8;
  }
 
  .result-details {
  font-size: 14px;
+ line-height: 1.8;
+ margin-top: 16px;
+ }
+
+ .warning-section {
+ background: #f5f5f5;
+ padding: 16px;
+ margin-top: 16px;
+ border: 1px solid #999;
+ border-left: 4px solid #666;
+ }
+
+ .warning-title {
+ font-weight: 700;
+ margin-bottom: 10px;
+ color: #333;
+ font-size: 14px;
+ text-transform: uppercase;
+ letter-spacing: 0.5px;
+ }
+
+ .warning-list {
+ font-size: 13px;
+ color: #555;
  line-height: 1.6;
+ }
+
+ .error-section {
+ background: #f8f8f8;
+ padding: 18px;
+ margin-top: 20px;
+ border: 2px solid #333;
+ border-left: 6px solid #000;
+ }
+
+ .error-title {
+ font-weight: 700;
+ margin-bottom: 14px;
+ color: #000;
+ font-size: 15px;
+ text-transform: uppercase;
+ letter-spacing: 1px;
+ }
+
+ .error-list {
+ font-size: 13px;
+ color: #222;
+ max-height: 400px;
+ overflow-y: auto;
+ font-family: 'Courier New', monospace;
+ }
+
+ .error-item {
+ padding: 10px;
+ margin-bottom: 8px;
+ background: #fff;
+ border: 1px solid #ddd;
+ line-height: 1.6;
+ }
+
+ .error-item:last-child {
+ margin-bottom: 0;
+ }
+
+ .error-more {
+ margin-top: 14px;
+ font-weight: 700;
+ color: #000;
+ font-size: 13px;
+ text-transform: uppercase;
+ }
+
+ .action-buttons {
+ display: flex;
+ gap: 12px;
+ margin-top: 20px;
+ }
+
+ .btn-view {
+ flex: 1;
+ padding: 12px;
+ background: var(--accent-dark);
+ color: var(--card-bg);
+ border: none;
+ font-size: 14px;
+ font-weight: 600;
+ cursor: pointer;
+ text-align: center;
+ text-decoration: none;
+ transition: all 0.2s;
+ display: inline-block;
+ }
+
+ .btn-view:hover {
+ background: #5568d3;
+ box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+ }
+
+ .btn-upload-more {
+ flex: 1;
+ padding: 12px;
+ background: var(--card-bg);
+ color: var(--accent-dark);
+ border: 2px solid var(--accent-dark);
+ font-size: 14px;
+ font-weight: 600;
+ cursor: pointer;
+ transition: all 0.2s;
+ }
+
+ .btn-upload-more:hover {
+ background: var(--accent-light);
+ }
+
+ .organizations-list {
+ margin-top: 20px;
+ max-height: 400px;
+ overflow-y: auto;
+ border: 1px solid #c3e6cb;
+ background: rgba(255, 255, 255, 0.5);
+ }
+
+ .org-item {
+ padding: 16px;
+ border-bottom: 1px solid #ddd;
+ background: #fff;
+ }
+
+ .org-item:last-child {
+ border-bottom: none;
+ }
+
+ .org-item:hover {
+ background: #fafafa;
+ }
+
+ .org-header {
+ display: flex;
+ justify-content: space-between;
+ align-items: center;
+ margin-bottom: 8px;
+ }
+
+ .org-info {
+ flex: 1;
+ }
+
+ .org-name {
+ font-weight: 600;
+ color: #000;
+ margin-bottom: 4px;
+ font-size: 14px;
+ }
+
+ .org-inn {
+ font-size: 12px;
+ color: #666;
+ font-family: 'Courier New', monospace;
+ }
+
+ .org-stats {
+ display: flex;
+ gap: 12px;
+ align-items: center;
+ }
+
+ .empty-fields-toggle {
+ margin-top: 8px;
+ padding: 8px 12px;
+ background: #f5f5f5;
+ border: 1px solid #ddd;
+ cursor: pointer;
+ font-size: 13px;
+ font-weight: 600;
+ color: #333;
+ user-select: none;
+ }
+
+ .empty-fields-toggle:hover {
+ background: #e8e8e8;
+ }
+
+ .toggle-icon {
+ display: inline-block;
+ width: 16px;
+ font-size: 12px;
+ margin-right: 8px;
+ }
+
+ .empty-fields-list {
+ margin-top: 8px;
+ padding: 12px;
+ background: #fafafa;
+ border: 1px solid #ddd;
+ border-top: none;
+ }
+
+ .empty-field-item {
+ padding: 6px 8px;
+ margin-bottom: 4px;
+ background: #fff;
+ border-left: 3px solid #999;
+ font-size: 12px;
+ color: #555;
+ font-family: 'Courier New', monospace;
+ }
+
+ .empty-field-item:last-child {
+ margin-bottom: 0;
+ }
+
+ .empty-fields-count {
+ margin-top: 8px;
+ padding: 8px 12px;
+ background: #f5f5f5;
+ border: 1px solid #ddd;
+ font-size: 13px;
+ font-weight: 600;
+ color: #333;
+ }
+
+ .org-badge {
+ padding: 4px 10px;
+ border-radius: 2px;
+ font-size: 10px;
+ font-weight: 700;
+ text-transform: uppercase;
+ letter-spacing: 0.5px;
+ }
+
+ .badge-new {
+ background: #000;
+ color: #fff;
+ border: 1px solid #000;
+ }
+
+ .badge-updated {
+ background: #666;
+ color: #fff;
+ border: 1px solid #666;
+ }
+
+ .empty-fields {
+ font-size: 12px;
+ color: #333;
+ font-weight: 500;
+ }
+
+ .empty-fields.critical {
+ color: #000;
+ font-weight: 700;
+ text-decoration: underline;
+ }
+
+ .list-header {
+ padding: 14px 16px;
+ background: #e8e8e8;
+ font-weight: 700;
+ color: #000;
+ position: sticky;
+ top: 0;
+ z-index: 1;
+ text-transform: uppercase;
+ letter-spacing: 0.5px;
+ font-size: 12px;
+ border-bottom: 2px solid #333;
  }
 
  .back-link {
@@ -278,11 +571,7 @@
  const data = await response.json();
 
  if (response.ok) {
- showResult('success', 'Файл успешно обработан!', 
- `Загружено организаций: ${data.organizations_count}<br>` +
- `Обработано строк: ${data.rows_processed}<br>` +
- `Ошибок: ${data.errors || 0}`
- );
+ showSuccessResult(data);
  } else {
  showResult('error', 'Ошибка при обработке файла', data.detail || 'Неизвестная ошибка');
  }
@@ -295,6 +584,145 @@
  }, 1000);
  }
  });
+
+ function showSuccessResult(data) {
+ const missingWarnings = [];
+ if (data.missing_fields) {
+ if (data.missing_fields.contacts > 0) 
+ missingWarnings.push(`У ${data.missing_fields.contacts} предприятий нет контактных данных`);
+ if (data.missing_fields.coordinates > 0) 
+ missingWarnings.push(`У ${data.missing_fields.coordinates} предприятий нет координат`);
+ if (data.missing_fields.metrics > 0) 
+ missingWarnings.push(`У ${data.missing_fields.metrics} предприятий нет финансовых показателей`);
+ if (data.missing_fields.taxes > 0) 
+ missingWarnings.push(`У ${data.missing_fields.taxes} предприятий нет данных по налогам`);
+ if (data.missing_fields.assets > 0) 
+ missingWarnings.push(`У ${data.missing_fields.assets} предприятий нет данных об имуществе`);
+ if (data.missing_fields.products > 0) 
+ missingWarnings.push(`У ${data.missing_fields.products} предприятий нет информации о продукции`);
+ }
+
+ let warningHtml = '';
+ if (missingWarnings.length > 0) {
+ warningHtml = `
+ <div class="warning-section">
+ <div class="warning-title">ПРЕДУПРЕЖДЕНИЕ: Обнаружены неполные данные</div>
+ <div class="warning-list">
+ ${missingWarnings.map(w => `${w}`).join('<br>')}
+ </div>
+ </div>
+ `;
+ }
+
+ // Build organizations list with toggle for empty fields
+ let organizationsListHtml = '';
+ if (data.organizations_details && data.organizations_details.length > 0) {
+ const orgItems = data.organizations_details.map((org, index) => {
+ const badge = org.is_new ? 
+ '<span class="org-badge badge-new">НОВОЕ</span>' : 
+ '<span class="org-badge badge-updated">ОБНОВЛЕНО</span>';
+ 
+ // Build empty fields list if available
+ let emptyFieldsHtml = '';
+ if (org.empty_fields_list && org.empty_fields_list.length > 0) {
+ emptyFieldsHtml = `
+ <div class="empty-fields-toggle" onclick="toggleEmptyFields(${index})">
+ <span class="toggle-icon" id="toggle-icon-${index}">▶</span>
+ Пустых полей: ${org.empty_fields}
+ </div>
+ <div class="empty-fields-list" id="empty-fields-${index}" style="display: none;">
+ ${org.empty_fields_list.map(field => `<div class="empty-field-item">${field}</div>`).join('')}
+ </div>
+ `;
+ } else if (org.empty_fields > 0) {
+ emptyFieldsHtml = `<div class="empty-fields-count">Пустых полей: ${org.empty_fields}</div>`;
+ }
+ 
+ return `
+ <div class="org-item">
+ <div class="org-header">
+ <div class="org-info">
+ <div class="org-name">${org.name}</div>
+ <div class="org-inn">ИНН: ${org.inn}</div>
+ </div>
+ <div class="org-stats">
+ ${badge}
+ </div>
+ </div>
+ ${emptyFieldsHtml}
+ </div>
+ `;
+ }).join('');
+
+ const showingCount = data.organizations_details.length;
+ const totalCount = data.organizations_count;
+ 
+ organizationsListHtml = `
+ <div class="organizations-list">
+ <div class="list-header">
+ Загруженные предприятия (показаны первые ${showingCount} из ${totalCount})
+ </div>
+ ${orgItems}
+ </div>
+ `;
+ }
+
+ result.className = 'result success';
+ result.innerHTML = `
+ <div class="result-title">ФАЙЛ УСПЕШНО ОБРАБОТАН</div>
+ <div class="result-stats">
+ <div class="stat-card">
+ <span class="stat-value">${data.organizations_count}</span>
+ <span class="stat-label">Всего предприятий</span>
+ </div>
+ <div class="stat-card">
+ <span class="stat-value">${data.organizations_new || 0}</span>
+ <span class="stat-label">Новых</span>
+ </div>
+ <div class="stat-card">
+ <span class="stat-value">${data.organizations_updated || 0}</span>
+ <span class="stat-label">Обновлено</span>
+ </div>
+ </div>
+ ${warningHtml}
+ ${organizationsListHtml}
+ ${data.rows_skipped > 0 ? `<div class="result-details">Пропущено пустых строк: ${data.rows_skipped}</div>` : ''}
+ ${data.errors > 0 && data.error_details ? `
+ <div class="error-section">
+ <div class="error-title">ОШИБКИ ПРИ ОБРАБОТКЕ (${data.errors})</div>
+ <div class="error-list">
+ ${data.error_details.map(err => `<div class="error-item">${err}</div>`).join('')}
+ ${data.errors > data.error_details.length ? `<div class="error-more">Всего ошибок: ${data.errors}. Показаны первые ${data.error_details.length}.</div>` : ''}
+ </div>
+ </div>
+ ` : ''}
+ <div class="action-buttons">
+ <a href="/organizations" class="btn-view">Перейти к списку предприятий</a>
+ <button onclick="resetForm()" class="btn-upload-more">Загрузить ещё файл</button>
+ </div>
+ `;
+ result.style.display = 'block';
+ }
+
+ function toggleEmptyFields(index) {
+ const list = document.getElementById(`empty-fields-${index}`);
+ const icon = document.getElementById(`toggle-icon-${index}`);
+ 
+ if (list.style.display === 'none') {
+ list.style.display = 'block';
+ icon.textContent = '▼';
+ } else {
+ list.style.display = 'none';
+ icon.textContent = '▶';
+ }
+ }
+
+ function resetForm() {
+ form.reset();
+ fileInfo.style.display = 'none';
+ result.style.display = 'none';
+ progress.style.display = 'none';
+ }
 
  function showResult(type, title, details) {
  result.className = `result ${type}`;
