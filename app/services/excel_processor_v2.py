@@ -195,13 +195,13 @@ def process_excel_file(file_path: Path, db: Session) -> Dict[str, Any]:
                     got_moscow_support=safe_bool(row[42]),  # Получена поддержка от г. Москвы
                     is_system_critical=safe_bool(row[43]),  # Системообразующее предприятие
                     msp_status=safe_str(row[44]),  # Статус МСП
-                    coordinates_lat=safe_float(row[207] if len(row) > 207 else None),  # Координаты (широта)
-                    coordinates_lon=safe_float(row[208] if len(row) > 208 else None),  # Координаты (долгота)
-                    legal_address_coords=safe_str(row[204] if len(row) > 204 else None),  # Координаты юр. адреса
-                    production_address_coords=safe_str(row[205] if len(row) > 205 else None),  # Координаты адреса производства
-                    additional_address_coords=safe_str(row[206] if len(row) > 206 else None),  # Координаты доп. площадки
-                    district=safe_str(row[209] if len(row) > 209 else None),  # Округ
-                    region=safe_str(row[210] if len(row) > 210 else None),  # Район
+                    coordinates_lat=safe_float(row[205] if len(row) > 205 else None),  # Координаты (широта)
+                    coordinates_lon=safe_float(row[206] if len(row) > 206 else None),  # Координаты (долгота)
+                    legal_address_coords=safe_str(row[202] if len(row) > 202 else None),  # Координаты юр. адреса
+                    production_address_coords=safe_str(row[203] if len(row) > 203 else None),  # Координаты адреса производства
+                    additional_address_coords=safe_str(row[204] if len(row) > 204 else None),  # Координаты доп. площадки
+                    district=safe_str(row[207] if len(row) > 207 else None),  # Округ
+                    region=safe_str(row[208] if len(row) > 208 else None),  # Район
                 )
                 db.add(org)
                 db.flush()  # Get org.id
