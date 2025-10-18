@@ -150,17 +150,21 @@
  }
 
  .btn-load-fns {
- padding: 12px 20px;
+ width: 100%;
+ padding: 14px 20px;
  background: rgba(0, 123, 255, 0.9);
  color: white;
  border: none;
- font-size: 13px;
- font-weight: 600;
+ font-size: 14px;
+ font-weight: 700;
  cursor: pointer;
- white-space: nowrap;
  transition: all 0.3s ease;
  text-transform: uppercase;
- letter-spacing: 0.3px;
+ letter-spacing: 0.5px;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ gap: 8px;
  }
 
  .btn-load-fns:hover {
@@ -302,13 +306,10 @@
  <div class="section-title">Основная информация</div>
  
  <div class="form-grid">
- <div class="form-group-with-button">
  <div class="form-group">
  <label class="form-label required">ИНН</label>
  <input type="text" name="inn" id="innInput" class="form-input" required maxlength="12" pattern="[0-9]{10,12}">
  <span class="form-hint">10 или 12 цифр</span>
- </div>
- <button type="button" class="btn-load-fns" id="loadFromFnsBtn" onclick="loadFromFNS()">⟳ Загрузить из ФНС</button>
  </div>
 
  <div class="form-group">
@@ -318,9 +319,44 @@
  </div>
 
  <div class="form-grid-full">
+ <button type="button" class="btn-load-fns" id="loadFromFnsBtn" onclick="loadFromFNS()" style="margin-bottom: 20px;">⟳ ЗАГРУЗИТЬ ДАННЫЕ ИЗ ФНС</button>
+ </div>
+
+ <div class="form-grid-full">
  <div class="form-group">
- <label class="form-label">Полное наименование</label>
- <input type="text" name="full_name" class="form-input">
+ <label class="form-label required">Полное наименование</label>
+ <input type="text" name="full_name" class="form-input" required>
+ </div>
+ </div>
+
+ <div class="form-grid-full">
+ <div class="form-group">
+ <label class="form-label required">Юридический адрес</label>
+ <input type="text" name="legal_address" class="form-input" required>
+ </div>
+ </div>
+
+ <div class="form-grid">
+ <div class="form-group">
+ <label class="form-label required">Основной ОКВЭД</label>
+ <input type="text" name="main_okved" class="form-input" required>
+ </div>
+
+ <div class="form-group">
+ <label class="form-label">Название ОКВЭД</label>
+ <input type="text" name="main_okved_name" class="form-input">
+ </div>
+ </div>
+
+ <div class="form-grid">
+ <div class="form-group">
+ <label class="form-label required">Статус</label>
+ <input type="text" name="status_final" class="form-input" required>
+ </div>
+
+ <div class="form-group">
+ <label class="form-label required">Дата регистрации</label>
+ <input type="date" name="registration_date" class="form-input" required>
  </div>
  </div>
 
@@ -341,16 +377,11 @@
  <!-- Addresses Section -->
  <div class="collapsible-section">
  <div class="section-header" onclick="toggleSection('addresses')">
- <span class="section-header-title">Адреса</span>
+ <span class="section-header-title">Дополнительные адреса</span>
  <span class="section-toggle" id="toggle-addresses">▼</span>
  </div>
  <div class="section-content" id="content-addresses">
  <div class="form-grid-full">
- <div class="form-group">
- <label class="form-label">Юридический адрес</label>
- <input type="text" name="legal_address" class="form-input">
- </div>
-
  <div class="form-group">
  <label class="form-label">Производственный адрес</label>
  <input type="text" name="production_address" class="form-input">
@@ -429,32 +460,8 @@
  </div>
 
  <div class="form-group">
- <label class="form-label">Статус</label>
- <input type="text" name="status_final" class="form-input">
- </div>
- </div>
-
- <div class="form-grid">
- <div class="form-group">
- <label class="form-label">Основной ОКВЭД</label>
- <input type="text" name="main_okved" class="form-input">
- </div>
-
- <div class="form-group">
- <label class="form-label">Название ОКВЭД</label>
- <input type="text" name="main_okved_name" class="form-input">
- </div>
- </div>
-
- <div class="form-grid">
- <div class="form-group">
  <label class="form-label">ФИО руководителя</label>
  <input type="text" name="head_name" class="form-input">
- </div>
-
- <div class="form-group">
- <label class="form-label">Дата регистрации</label>
- <input type="date" name="registration_date" class="form-input">
  </div>
  </div>
 
