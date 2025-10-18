@@ -5,14 +5,6 @@ from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 from alembic import context
 from app.db.database import Base
-from app.db.models import (
-    Organization,
-    OrganizationMetrics,
-    OrganizationTaxes,
-    OrganizationAssets,
-    OrganizationProducts,
-    OrganizationMeta,
-)
 from config import get_database_url
 
 # this is the Alembic Config object, which provides

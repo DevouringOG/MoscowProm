@@ -1,10 +1,6 @@
 from datetime import datetime
 from fastapi import APIRouter, Request, HTTPException, Depends, Query
-from fastapi.responses import (
-    HTMLResponse,
-    JSONResponse,
-    StreamingResponse,
-)
+from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import desc, or_

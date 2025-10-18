@@ -6,7 +6,7 @@ Excel file processor v2 - использует индексы столбцов �
 - 1: ИНН
 - 2: Наименование организации
 - 47-53: Выручка 2017-2023
-- 54-60: Прибыль 2017-2023  
+- 54-60: Прибыль 2017-2023
 - 61-67: Численность всего 2017-2023
 - 68-74: Численность Москва 2017-2023
 - 75-81: ФОТ всего 2017-2023
@@ -27,7 +27,7 @@ Excel file processor v2 - использует индексы столбцов �
 
 from pathlib import Path
 from datetime import datetime
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 import openpyxl
 from sqlalchemy.orm import Session
 from app.db.models import (
