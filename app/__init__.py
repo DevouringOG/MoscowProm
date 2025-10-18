@@ -14,6 +14,7 @@ from app.logger import setup_logging, get_logger
 from app.db import engine, Base, get_db
 from app.db.models import Organization, OrganizationMetrics, OrganizationTaxes, OrganizationAssets, OrganizationProducts, OrganizationMeta
 from app.services.excel_processor import process_excel_file
+from app.services.fns_api import get_fns_service
 from config import settings, ensure_directories
 
 # Setup logging
@@ -731,6 +732,105 @@ async def update_organization_full(
         db.rollback()
         logger.error("organization_full_update_failed", organization_id=organization_id, error=str(e))
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/organizations/{organization_id}/update-from-fns")
+async def update_organization_from_fns(
+    organization_id: int,
+    db: Session = Depends(get_db)
+):
+    """
+    Update organization data from FNS API using INN.
+    """
+    org = db.query(Organization).filter(Organization.id == organization_id).first()
+    
+    if not org:
+        raise HTTPException(status_code=404, detail="Organization not found")
+    
+    if not org.inn:
+        raise HTTPException(status_code=400, detail="Organization has no INN")
+    
+    try:
+        # Check if FNS API is enabled
+        fns_enabled = getattr(settings.get('fns_api', {}), 'enabled', False)
+        if not fns_enabled:
+            raise HTTPException(status_code=503, detail="FNS API is disabled")
+        
+        # Get FNS API configuration
+        fns_config = settings.get('fns_api', {})
+        api_key = getattr(fns_config, 'api_key', None)
+        timeout = getattr(fns_config, 'timeout', 30)
+        
+        if not api_key:
+            raise HTTPException(status_code=503, detail="FNS API key not configured")
+        
+        # Get FNS service
+        fns_service = get_fns_service(api_key=api_key, timeout=timeout)
+        
+        # Fetch data from FNS
+        logger.info("fetching_fns_data", organization_id=organization_id, inn=org.inn)
+        fns_data = await fns_service.get_organization_by_inn(org.inn)
+        
+        if not fns_data:
+            raise HTTPException(status_code=404, detail="Organization not found in FNS database")
+        
+        # Track what was updated
+        updated_fields = []
+        
+        # Update organization fields - only fields that exist in the model
+        # Map: model_field -> fns_field
+        field_mapping = {
+            'name': 'name',
+            'full_name': 'full_name',
+            'legal_address': 'legal_address',
+            'status_final': 'status',  # FNS 'status' maps to 'status_final' in our model
+            'main_okved': 'main_okved',
+            'main_okved_name': 'main_okved_name',
+            'head_name': 'head_name',
+            'registration_date': 'registration_date'
+        }
+        
+        for org_field, fns_field in field_mapping.items():
+            if fns_field in fns_data and fns_data[fns_field]:
+                # Check if field exists in model
+                if not hasattr(org, org_field):
+                    continue
+                    
+                old_value = getattr(org, org_field, None)
+                new_value = fns_data[fns_field]
+                
+                # Only update if value changed
+                if old_value != new_value:
+                    setattr(org, org_field, new_value)
+                    updated_fields.append(org_field)
+                    logger.debug("field_updated", field=org_field, old_value=old_value, new_value=new_value)
+        
+        # Update updated_at timestamp
+        org.updated_at = datetime.now()
+        
+        db.commit()
+        logger.info("organization_updated_from_fns", 
+                   organization_id=organization_id, 
+                   inn=org.inn,
+                   updated_fields=updated_fields)
+        
+        return JSONResponse(content={
+            "status": "success",
+            "message": f"Данные обновлены из ФНС. Обновлено полей: {len(updated_fields)}",
+            "organization_id": organization_id,
+            "updated_fields": updated_fields,
+            "inn": org.inn
+        })
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        logger.error("fns_update_failed", 
+                    organization_id=organization_id, 
+                    inn=org.inn,
+                    error=str(e))
+        raise HTTPException(status_code=500, detail=f"Failed to update from FNS: {str(e)}")
 
 
 @app.get("/analytics", response_class=HTMLResponse)

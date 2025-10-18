@@ -41,7 +41,8 @@
 
  .back-btn,
  .edit-btn,
- .delete-btn {
+ .delete-btn,
+ .fns-btn {
  display: inline-flex;
  align-items: center;
  gap: 8px;
@@ -55,8 +56,22 @@
  }
 
  .back-btn:hover,
- .edit-btn:hover {
+ .edit-btn:hover,
+ .fns-btn:hover {
  background: rgba(255, 255, 255, 0.3);
+ }
+
+ .fns-btn {
+ background: rgba(0, 123, 255, 0.8);
+ }
+
+ .fns-btn:hover {
+ background: rgba(0, 123, 255, 1);
+ }
+
+ .fns-btn:disabled {
+ opacity: 0.5;
+ cursor: not-allowed;
  }
 
  .delete-btn {
@@ -260,6 +275,7 @@
  <a href="/organizations" class="back-btn">← Назад к списку</a>
  <a href="/organizations/{{ org.id }}/analytics" class="edit-btn">Аналитика</a>
  <a href="/organizations/{{ org.id }}/edit" class="edit-btn">Редактировать</a>
+ <button onclick="updateFromFNS()" class="fns-btn" id="fnsBtn">⟳ ОБНОВИТЬ ИЗ ФНС</button>
  <button onclick="deleteOrganization()" class="delete-btn"> Удалить</button>
 </div>
  <h1 class="org-title">{{ org.name }}</h1>
@@ -635,6 +651,44 @@
  }
  } catch (error) {
  alert('Ошибка при удалении: ' + error.message);
+ }
+ }
+
+ async function updateFromFNS() {
+ const btn = document.getElementById('fnsBtn');
+ const originalText = btn.textContent;
+ 
+ if (!confirm('Обновить данные организации из базы ФНС?\n\nТекущие данные будут перезаписаны актуальной информацией.')) {
+ return;
+ }
+
+ try {
+ // Disable button and show loading state
+ btn.disabled = true;
+ btn.textContent = '⟳ Загрузка...';
+
+ const response = await fetch('/organizations/{{ org.id }}/update-from-fns', {
+ method: 'POST',
+ headers: {
+ 'Content-Type': 'application/json'
+ }
+ });
+
+ const data = await response.json();
+
+ if (response.ok) {
+ alert(data.message + '\n\nОбновленные поля: ' + (data.updated_fields.length > 0 ? data.updated_fields.join(', ') : 'нет изменений'));
+ // Reload page to show updated data
+ window.location.reload();
+ } else {
+ alert('Ошибка при обновлении из ФНС: ' + (data.detail || 'Неизвестная ошибка'));
+ btn.disabled = false;
+ btn.textContent = originalText;
+ }
+ } catch (error) {
+ alert('Ошибка при обновлении из ФНС: ' + error.message);
+ btn.disabled = false;
+ btn.textContent = originalText;
  }
  }
 </script>
