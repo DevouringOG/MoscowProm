@@ -1,4 +1,3 @@
-from contextlib import asynccontextmanager
 from pathlib import Path
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
@@ -21,25 +20,12 @@ UPLOAD_DIR = Path("uploads")
 UPLOAD_DIR.mkdir(exist_ok=True)
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    logger.info("application_starting", version=settings.app_version)
-    try:
-        Base.metadata.create_all(bind=engine)
-        logger.info("database_tables_created")
-    except Exception as e:
-        logger.error("database_tables_creation_failed", error=str(e))
-    yield
-    logger.info("application_shutting_down")
-
-
 app = FastAPI(
     title=settings.app_name,
     version=settings.app_version,
     description="Web application for analyzing industrial enterprises in Moscow",
     docs_url=None,
     redoc_url=None,
-    lifespan=lifespan,
 )
 
 static_dir = Path(__file__).parent / "static"

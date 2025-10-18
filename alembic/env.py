@@ -7,6 +7,9 @@ from alembic import context
 from app.db.database import Base
 from config import get_database_url
 
+# Import all models so Alembic can detect them for autogenerate
+from app.db import models  # noqa: F401
+
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
