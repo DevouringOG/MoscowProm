@@ -10,33 +10,29 @@
 
 - Python 3.11+
 - Poetry
-- PostgreSQL 16+ (или Docker)
+- Docker
 
 ### 1. Установка зависимостей
 ```bash
 poetry install
 ```
 
-### 2. Настройка базы данных
-```bash
-docker-compose up -d
-```
+### 2. Настройка переменных окружения
 
-### 3. Настройка переменных окружения
-
-Создайте файл `.env` в корне проекта:
+Создайте файл `.env` в корне проекта шаблон - .env.example (апи ключ для фнс апи свой в настройках оставил):
 
 ```env
 POSTGRES_USER=mosprom_user
 POSTGRES_PASSWORD=mosprom_password
 POSTGRES_DB=mosprom_db
 DATABASE_URL=postgresql://mosprom_user:mosprom_password@localhost:5432/mosprom_db
-
 SECRET_KEY=your-secret-key-here
 DEBUG=true
+```
 
-# Для интеграции с ФНС
-FNS_API_KEY=your-fns-api-key
+### 3. Настройка базы данных
+```bash
+docker-compose up -d
 ```
 
 ### 4. Применение миграций
@@ -72,9 +68,8 @@ poetry run python app.py
 - **Bootstrap** - CSS фреймворк
 - **Chart.js** - Графики и визуализация
 
-### Обработка данных
+### Остальное
 - **openpyxl** - Работа с Excel
-- **pandas** - Анализ данных
 - **httpx** - HTTP клиент
 
 ### Конфигурация
