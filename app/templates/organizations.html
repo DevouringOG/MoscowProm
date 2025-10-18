@@ -244,6 +244,56 @@
  align-items: flex-end;
  }
 
+ .sort-controls {
+ display: flex;
+ gap: 8px;
+ align-items: center;
+ margin-left: auto;
+ }
+
+ .sort-label {
+ font-size: 14px;
+ font-weight: 600;
+ color: var(--text-secondary);
+ }
+
+ .sort-select {
+ padding: 10px 15px;
+ border: 2px solid #e9ecef;
+ font-size: 14px;
+ background: var(--card-bg);
+ cursor: pointer;
+ transition: border-color 0.3s ease;
+ }
+
+ .sort-select:focus {
+ outline: none;
+ border-color: var(--accent-dark);
+ }
+
+ .sort-order-btn {
+ background: var(--card-bg);
+ color: var(--text-secondary);
+ padding: 10px 12px;
+ border: 2px solid #e9ecef;
+ font-size: 18px;
+ cursor: pointer;
+ transition: all 0.3s ease;
+ min-width: 44px;
+ line-height: 1;
+ }
+
+ .sort-order-btn:hover {
+ border-color: var(--accent-dark);
+ background: var(--accent-light);
+ }
+
+ .sort-order-btn.active {
+ background: var(--accent-dark);
+ color: var(--card-bg);
+ border-color: var(--accent-dark);
+ }
+
  .btn-search {
  background: var(--accent-dark);
  color: var(--card-bg);
@@ -605,9 +655,27 @@
 </div>
 
  <div class="filter-actions">
- <button type="submit" class="btn btn-search"> Применить</button>
+ <button type="submit" class="btn btn-search">🔍 Применить</button>
  <a href="/organizations" class="btn btn-clear">× Сбросить</a>
-</div>
+ 
+ <div class="sort-controls">
+ <span class="sort-label">Сортировка:</span>
+ <select name="sort_by" class="sort-select" onchange="this.form.submit()">
+ <option value="name" {% if sort_by == 'name' %}selected{% endif %}>Название</option>
+ <option value="inn" {% if sort_by == 'inn' %}selected{% endif %}>ИНН</option>
+ <option value="main_industry" {% if sort_by == 'main_industry' %}selected{% endif %}>Отрасль</option>
+ <option value="status_final" {% if sort_by == 'status_final' %}selected{% endif %}>Статус</option>
+ <option value="district" {% if sort_by == 'district' %}selected{% endif %}>Округ</option>
+ <option value="region" {% if sort_by == 'region' %}selected{% endif %}>Район</option>
+ <option value="company_size" {% if sort_by == 'company_size' %}selected{% endif %}>Размер</option>
+ </select>
+ <button type="button" class="sort-order-btn {% if order == 'asc' %}active{% endif %}" 
+ onclick="setSortOrder('asc')" title="По возрастанию">▲</button>
+ <button type="button" class="sort-order-btn {% if order == 'desc' %}active{% endif %}" 
+ onclick="setSortOrder('desc')" title="По убыванию">▼</button>
+ <input type="hidden" name="order" id="sort-order" value="{{ order }}">
+ </div>
+ </div>
 </div>
 </form>
 </div>
@@ -622,6 +690,8 @@
  {% for dist in selected_districts %}{% set _ = params.append('district=' + dist) %}{% endfor %}
  {% for reg in selected_regions %}{% set _ = params.append('region=' + reg) %}{% endfor %}
  {% for sz in selected_sizes %}{% set _ = params.append('size=' + sz) %}{% endfor %}
+ {% set _ = params.append('sort_by=' + sort_by) %}
+ {% set _ = params.append('order=' + order) %}
  <a href="/organizations?{{ '&'.join(params) }}" class="filter-tag">
  Поиск: "{{ search }}" <span class="filter-tag-remove">×</span>
 </a>
@@ -634,6 +704,8 @@
  {% for dist in selected_districts %}{% set _ = params.append('district=' + dist) %}{% endfor %}
  {% for reg in selected_regions %}{% set _ = params.append('region=' + reg) %}{% endfor %}
  {% for sz in selected_sizes %}{% set _ = params.append('size=' + sz) %}{% endfor %}
+ {% set _ = params.append('sort_by=' + sort_by) %}
+ {% set _ = params.append('order=' + order) %}
  <a href="/organizations?{{ '&'.join(params) }}" class="filter-tag">
  Отрасль: {{ ind }} <span class="filter-tag-remove">×</span>
 </a>
@@ -646,6 +718,8 @@
  {% for d in selected_districts if d != dist %}{% set _ = params.append('district=' + d) %}{% endfor %}
  {% for reg in selected_regions %}{% set _ = params.append('region=' + reg) %}{% endfor %}
  {% for sz in selected_sizes %}{% set _ = params.append('size=' + sz) %}{% endfor %}
+ {% set _ = params.append('sort_by=' + sort_by) %}
+ {% set _ = params.append('order=' + order) %}
  <a href="/organizations?{{ '&'.join(params) }}" class="filter-tag">
  Округ: {{ dist }} <span class="filter-tag-remove">×</span>
 </a>
@@ -658,6 +732,8 @@
  {% for dist in selected_districts %}{% set _ = params.append('district=' + dist) %}{% endfor %}
  {% for r in selected_regions if r != reg %}{% set _ = params.append('region=' + r) %}{% endfor %}
  {% for sz in selected_sizes %}{% set _ = params.append('size=' + sz) %}{% endfor %}
+ {% set _ = params.append('sort_by=' + sort_by) %}
+ {% set _ = params.append('order=' + order) %}
  <a href="/organizations?{{ '&'.join(params) }}" class="filter-tag">
  Район: {{ reg }} <span class="filter-tag-remove">×</span>
 </a>
@@ -670,6 +746,8 @@
  {% for dist in selected_districts %}{% set _ = params.append('district=' + dist) %}{% endfor %}
  {% for reg in selected_regions %}{% set _ = params.append('region=' + reg) %}{% endfor %}
  {% for s in selected_sizes if s != sz %}{% set _ = params.append('size=' + s) %}{% endfor %}
+ {% set _ = params.append('sort_by=' + sort_by) %}
+ {% set _ = params.append('order=' + order) %}
  <a href="/organizations?{{ '&'.join(params) }}" class="filter-tag">
  Размер: {{ sz }} <span class="filter-tag-remove">×</span>
 </a>
@@ -744,6 +822,8 @@
  {% for dist in selected_districts %}{% set _ = query_params.append('district=' + dist) %}{% endfor %}
  {% for reg in selected_regions %}{% set _ = query_params.append('region=' + reg) %}{% endfor %}
  {% for sz in selected_sizes %}{% set _ = query_params.append('size=' + sz) %}{% endfor %}
+ {% set _ = query_params.append('sort_by=' + sort_by) %}
+ {% set _ = query_params.append('order=' + order) %}
  {% set query_string = '&' + '&'.join(query_params) if query_params else '' %}
 
  {% if page > 1 %}
@@ -772,6 +852,12 @@
 </div>
 
  <script>
+ // Set sort order
+ function setSortOrder(order) {
+ document.getElementById('sort-order').value = order;
+ document.querySelector('form').submit();
+ }
+
  // Toggle filter visibility
  function toggleFilter(filterName) {
  const content = document.getElementById('content-' + filterName);

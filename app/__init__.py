@@ -130,6 +130,8 @@ async def list_organizations(
     district: list[str] = Query(None),
     region: list[str] = Query(None),
     size: list[str] = Query(None),
+    sort_by: str = Query("name", regex="^(name|inn|main_industry|status_final|district|region|company_size)$"),
+    order: str = Query("asc", regex="^(asc|desc)$"),
     db: Session = Depends(get_db)
 ):
     """
@@ -183,8 +185,16 @@ async def list_organizations(
     total = query.count()
     total_pages = (total + per_page - 1) // per_page
     
+    # Apply sorting
+    sort_field = getattr(Organization, sort_by, Organization.name)
+    if order == "desc":
+        from sqlalchemy import desc
+        query = query.order_by(desc(sort_field))
+    else:
+        query = query.order_by(sort_field)
+    
     # Get organizations for current page
-    organizations = query.order_by(Organization.name).offset(offset).limit(per_page).all()
+    organizations = query.offset(offset).limit(per_page).all()
     
     # Get unique values for filter checkboxes
     industries = db.query(Organization.main_industry).distinct().filter(Organization.main_industry.isnot(None)).order_by(Organization.main_industry).all()
@@ -214,6 +224,8 @@ async def list_organizations(
         "districts": districts,
         "regions": regions,
         "sizes": sizes,
+        "sort_by": sort_by,
+        "order": order,
     })
 
 
