@@ -4,10 +4,34 @@
 
 ## Технологии
 
-- **Backend**: FastAPI, SQLAlchemy, Alembic
+- **Backend**: FastAPI (модульная архитектура)
 - **Database**: PostgreSQL 16
-- **Cache**: Redis 7
+- **ORM**: SQLAlchemy + Alembic
 - **Frontend**: Jinja2 Templates, Chart.js
+- **Logging**: structlog
+
+## Структура проекта
+
+```
+app/
+├── main.py                    # FastAPI приложение
+├── schemas.py                 # Pydantic схемы
+├── routers/                   # API endpoints
+│   ├── upload.py              # Загрузка Excel
+│   ├── organizations.py       # CRUD организаций
+│   ├── organization_analytics.py  # Аналитика и редактирование
+│   ├── analytics.py           # Общая аналитика
+│   └── fns.py                 # Интеграция с ФНС
+├── db/                        # База данных
+│   ├── database.py            # Подключение
+│   └── models.py              # SQLAlchemy модели
+├── services/                  # Бизнес-логика
+│   ├── excel_processor_v2.py  # Обработка Excel
+│   ├── excel_exporter.py      # Экспорт в Excel
+│   └── fns_api.py             # API ФНС
+├── dependencies/              # DI зависимости
+└── templates/                 # HTML шаблоны
+```
 
 ## Быстрый старт
 
@@ -15,9 +39,8 @@
    ```bash
    cp .env.example .env
    ```
-   Отредактируйте `.env` при необходимости.
 
-2. **Запустите Docker контейнеры** (PostgreSQL + Redis):
+2. **Запустите PostgreSQL**:
    ```bash
    docker-compose up -d
    ```
