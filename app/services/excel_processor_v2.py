@@ -121,6 +121,7 @@ def process_excel_file(file_path: Path, db: Session) -> Dict[str, Any]:
     rows_processed = 0
     rows_skipped = 0
     errors = []
+    organizations_details = []  # Список с информацией о загруженных организациях
     
     # Process each row (skip header)
     for row_idx, row in enumerate(sheet.iter_rows(min_row=2, values_only=True), start=2):
@@ -136,6 +137,7 @@ def process_excel_file(file_path: Path, db: Session) -> Dict[str, Any]:
             # Check if organization already exists
             existing_org = db.query(Organization).filter(Organization.inn == inn).first()
             
+            is_new = False
             if existing_org:
                 org = existing_org
                 organizations_updated += 1
@@ -150,6 +152,7 @@ def process_excel_file(file_path: Path, db: Session) -> Dict[str, Any]:
                 ).delete()
                 
             else:
+                is_new = True
                 # Create new organization
                 org = Organization(
                     inn=inn,
@@ -406,6 +409,16 @@ def process_excel_file(file_path: Path, db: Session) -> Dict[str, Any]:
                     )
                     db.add(meta)
             
+            # Collect information about this organization (only first 50 to avoid huge response)
+            if len(organizations_details) < 50:
+                organizations_details.append({
+                    'inn': org.inn,
+                    'name': org.name or 'Без названия',
+                    'is_new': is_new,
+                    'empty_fields': 0,  # Will be calculated below
+                    'empty_fields_list': []  # List of empty field names
+                })
+            
             rows_processed += 1
             
             # Commit every 100 rows
@@ -436,7 +449,10 @@ def process_excel_file(file_path: Path, db: Session) -> Dict[str, Any]:
     return {
         'organizations_new': organizations_new,
         'organizations_updated': organizations_updated,
+        'organizations_count': organizations_new + organizations_updated,  # Total organizations processed
         'rows_processed': rows_processed,
         'rows_skipped': rows_skipped,
-        'errors': errors,
+        'errors': len(errors),
+        'error_details': [err for err in errors[:20]],  # First 20 errors only
+        'organizations_details': organizations_details,  # Detailed list of organizations
     }
