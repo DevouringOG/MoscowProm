@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from datetime import datetime
 from fastapi import FastAPI, Request, UploadFile, File, HTTPException, Depends, Query, Body
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
@@ -14,6 +14,7 @@ from app.logger import setup_logging, get_logger
 from app.db import engine, Base, get_db
 from app.db.models import Organization, OrganizationMetrics, OrganizationTaxes, OrganizationAssets, OrganizationProducts, OrganizationMeta
 from app.services.excel_processor import process_excel_file
+from app.services.excel_exporter import export_organizations_to_excel
 from app.services.fns_api import get_fns_service
 from config import settings, ensure_directories
 
@@ -346,6 +347,105 @@ async def list_organizations(
         "sort_by": sort_by,
         "order": order,
     })
+
+
+@app.get("/organizations/export")
+async def export_organizations(
+    search: str = None,
+    industry: list[str] = Query(None),
+    district: list[str] = Query(None),
+    region: list[str] = Query(None),
+    size: list[str] = Query(None),
+    sort_by: str = Query("name", regex="^(name|inn|main_industry|status_final|district|region|company_size)$"),
+    order: str = Query("asc", regex="^(asc|desc)$"),
+    db: Session = Depends(get_db)
+):
+    """
+    Export filtered organizations to Excel file.
+    """
+    try:
+        # Build query with same filters as list_organizations
+        query = db.query(Organization)
+        
+        # Apply search filter
+        if search:
+            search_filter = f"%{search}%"
+            query = query.filter(
+                (Organization.name.ilike(search_filter)) |
+                (Organization.inn.ilike(search_filter))
+            )
+        
+        # Apply industry filter
+        if industry:
+            industry_filters = []
+            for ind in industry:
+                industry_filters.append(Organization.main_industry.ilike(f"%{ind}%"))
+                industry_filters.append(Organization.extra_industry.ilike(f"%{ind}%"))
+            from sqlalchemy import or_
+            query = query.filter(or_(*industry_filters))
+        
+        # Apply district filter
+        if district:
+            district_filters = [Organization.district.ilike(f"%{d}%") for d in district]
+            from sqlalchemy import or_
+            query = query.filter(or_(*district_filters))
+        
+        # Apply region filter
+        if region:
+            region_filters = [Organization.region.ilike(f"%{r}%") for r in region]
+            from sqlalchemy import or_
+            query = query.filter(or_(*region_filters))
+        
+        # Apply size filter
+        if size:
+            size_filters = []
+            for s in size:
+                size_filters.append(Organization.company_size.ilike(f"%{s}%"))
+                size_filters.append(Organization.company_size_2022.ilike(f"%{s}%"))
+            from sqlalchemy import or_
+            query = query.filter(or_(*size_filters))
+        
+        # Apply sorting
+        sort_field = getattr(Organization, sort_by, Organization.name)
+        if order == "desc":
+            from sqlalchemy import desc
+            query = query.order_by(desc(sort_field))
+        else:
+            query = query.order_by(sort_field)
+        
+        # Get all organizations (no pagination for export)
+        organizations = query.all()
+        
+        if not organizations:
+            raise HTTPException(status_code=404, detail="Нет данных для экспорта")
+        
+        # Generate Excel file
+        excel_file = export_organizations_to_excel(organizations, db)
+        
+        # Generate filename with timestamp
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"predpriyatiya_{timestamp}.xlsx"
+        
+        logger.info("organizations_exported", count=len(organizations), filename=filename)
+        
+        # Return file as download
+        return StreamingResponse(
+            excel_file,
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={
+                "Content-Disposition": f"attachment; filename={filename}"
+            }
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        error_msg = str(e)
+        logger.error("export_failed", error=error_msg)
+        raise HTTPException(
+            status_code=500,
+            detail=f"ОШИБКА ЭКСПОРТА: {error_msg[:200]}"
+        )
 
 
 @app.get("/organizations/{organization_id}/analytics", response_class=HTMLResponse)

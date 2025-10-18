@@ -691,6 +691,7 @@
  <button type="submit" class="btn-primary">Применить фильтры</button>
  <a href="/organizations" class="btn-secondary">Сбросить</a>
  <button type="button" class="btn-secondary" onclick="toggleAllFilters()" id="toggleAllBtn">Скрыть все фильтры</button>
+ <button type="button" class="btn-secondary" onclick="exportToExcel()">📊 Выгрузить в Excel</button>
  
  <div class="sort-controls">
  <span class="sort-label">Сортировка:</span>
@@ -938,6 +939,52 @@
  content.classList.remove('collapsed');
  });
  });
+
+ // Export to Excel function
+ function exportToExcel() {
+ // Build URL with current filters
+ const params = new URLSearchParams();
+ 
+ // Add search parameter
+ const searchInput = document.querySelector('input[name="search"]');
+ if (searchInput && searchInput.value) {
+ params.append('search', searchInput.value);
+ }
+ 
+ // Add industry filters
+ document.querySelectorAll('input[name="industry"]:checked').forEach(checkbox => {
+ params.append('industry', checkbox.value);
+ });
+ 
+ // Add district filters
+ document.querySelectorAll('input[name="district"]:checked').forEach(checkbox => {
+ params.append('district', checkbox.value);
+ });
+ 
+ // Add region filters
+ document.querySelectorAll('input[name="region"]:checked').forEach(checkbox => {
+ params.append('region', checkbox.value);
+ });
+ 
+ // Add size filters
+ document.querySelectorAll('input[name="size"]:checked').forEach(checkbox => {
+ params.append('size', checkbox.value);
+ });
+ 
+ // Add sort parameters
+ const sortBySelect = document.querySelector('select[name="sort_by"]');
+ const orderSelect = document.querySelector('select[name="order"]');
+ if (sortBySelect) {
+ params.append('sort_by', sortBySelect.value);
+ }
+ if (orderSelect) {
+ params.append('order', orderSelect.value);
+ }
+ 
+ // Open export URL in new window to download file
+ const exportUrl = '/organizations/export?' + params.toString();
+ window.location.href = exportUrl;
+ }
 </script>
 </body>
 </html>
