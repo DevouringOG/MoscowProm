@@ -5,6 +5,7 @@ from datetime import datetime
 from fastapi import FastAPI, Request, UploadFile, File, HTTPException, Depends, Query
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 from app.logger import setup_logging, get_logger
 from app.db import engine, Base, get_db
@@ -60,6 +61,10 @@ app = FastAPI(
 # Setup templates
 templates_dir = Path(__file__).parent / "templates"
 templates = Jinja2Templates(directory=str(templates_dir))
+
+# Mount static files directory
+static_dir = Path(__file__).parent / "static"
+app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
 
 
 @app.get("/", response_class=HTMLResponse)
