@@ -139,6 +139,43 @@
  color: var(--text-secondary);
  }
 
+ .form-group-with-button {
+ display: flex;
+ gap: 8px;
+ align-items: flex-end;
+ }
+
+ .form-group-with-button .form-group {
+ flex: 1;
+ }
+
+ .btn-load-fns {
+ padding: 12px 20px;
+ background: rgba(0, 123, 255, 0.9);
+ color: white;
+ border: none;
+ font-size: 13px;
+ font-weight: 600;
+ cursor: pointer;
+ white-space: nowrap;
+ transition: all 0.3s ease;
+ text-transform: uppercase;
+ letter-spacing: 0.3px;
+ }
+
+ .btn-load-fns:hover {
+ background: rgba(0, 123, 255, 1);
+ transform: translateY(-1px);
+ box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+ }
+
+ .btn-load-fns:disabled {
+ background: rgba(0, 123, 255, 0.4);
+ cursor: not-allowed;
+ transform: none;
+ box-shadow: none;
+ }
+
  .form-actions {
  display: flex;
  gap: 12px;
@@ -265,10 +302,13 @@
  <div class="section-title">Основная информация</div>
  
  <div class="form-grid">
+ <div class="form-group-with-button">
  <div class="form-group">
  <label class="form-label required">ИНН</label>
- <input type="text" name="inn" class="form-input" required maxlength="12" pattern="[0-9]{10,12}">
+ <input type="text" name="inn" id="innInput" class="form-input" required maxlength="12" pattern="[0-9]{10,12}">
  <span class="form-hint">10 или 12 цифр</span>
+ </div>
+ <button type="button" class="btn-load-fns" id="loadFromFnsBtn" onclick="loadFromFNS()">⟳ Загрузить из ФНС</button>
  </div>
 
  <div class="form-group">
@@ -396,6 +436,18 @@
 
  <div class="form-grid">
  <div class="form-group">
+ <label class="form-label">Основной ОКВЭД</label>
+ <input type="text" name="main_okved" class="form-input">
+ </div>
+
+ <div class="form-group">
+ <label class="form-label">Название ОКВЭД</label>
+ <input type="text" name="main_okved_name" class="form-input">
+ </div>
+ </div>
+
+ <div class="form-grid">
+ <div class="form-group">
  <label class="form-label">ФИО руководителя</label>
  <input type="text" name="head_name" class="form-input">
  </div>
@@ -483,6 +535,89 @@
  setTimeout(() => {
  alert.remove();
  }, 5000);
+ }
+
+ async function loadFromFNS() {
+ const innInput = document.getElementById('innInput');
+ const btn = document.getElementById('loadFromFnsBtn');
+ const inn = innInput.value.trim();
+
+ // Validate INN
+ if (!inn) {
+ showAlert('error', 'Введите ИНН для загрузки данных из ФНС');
+ innInput.focus();
+ return;
+ }
+
+ if (!/^[0-9]{10,12}$/.test(inn)) {
+ showAlert('error', 'ИНН должен содержать 10 или 12 цифр');
+ innInput.focus();
+ return;
+ }
+
+ // Disable button and show loading
+ btn.disabled = true;
+ const originalText = btn.textContent;
+ btn.textContent = '⟳ Загрузка...';
+
+ try {
+ const response = await fetch(`/api/fns/organization/${inn}`);
+ const data = await response.json();
+
+ if (response.ok && data.status === 'success') {
+ // Fill form fields with FNS data
+ const fnsData = data.data;
+ 
+ // Basic information
+ if (fnsData.name) {
+ document.querySelector('input[name="name"]').value = fnsData.name;
+ }
+ if (fnsData.full_name) {
+ document.querySelector('input[name="full_name"]').value = fnsData.full_name;
+ }
+ 
+ // Address
+ if (fnsData.legal_address) {
+ document.querySelector('input[name="legal_address"]').value = fnsData.legal_address;
+ }
+ 
+ // OKVED
+ if (fnsData.main_okved) {
+ document.querySelector('input[name="main_okved"]').value = fnsData.main_okved;
+ }
+ if (fnsData.main_okved_name) {
+ document.querySelector('input[name="main_okved_name"]').value = fnsData.main_okved_name;
+ }
+ 
+ // Head
+ if (fnsData.head_name) {
+ document.querySelector('input[name="head_name"]').value = fnsData.head_name;
+ }
+ 
+ // Registration date
+ if (fnsData.registration_date) {
+ document.querySelector('input[name="registration_date"]').value = fnsData.registration_date;
+ }
+
+ // Status
+ if (fnsData.status) {
+ document.querySelector('input[name="status_final"]').value = fnsData.status;
+ }
+
+ showAlert('success', 'Данные успешно загружены из ФНС! Проверьте и дополните информацию.');
+ 
+ // Scroll to top to show the filled data
+ window.scrollTo({ top: 0, behavior: 'smooth' });
+ } else {
+ showAlert('error', data.detail || 'Не удалось получить данные из ФНС');
+ }
+ } catch (error) {
+ showAlert('error', `Ошибка при загрузке данных из ФНС: ${error.message}`);
+ } finally {
+ // Re-enable button
+ btn.disabled = false;
+ btn.textContent = originalText;
+ }
  }
  </script>
 </body>
