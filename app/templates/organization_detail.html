@@ -14,27 +14,30 @@
 
  body {
  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
- background: var(--accent-dark);
+ background: #f5f5f5;
  min-height: 100vh;
- padding: 20px;
+ padding: 0;
+ margin: 0;
  }
 
  .container {
- max-width: 1400px;
+ max-width: 100%;
  margin: 0 auto;
- background: var(--card-bg);box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+ background: #ffffff;
  overflow: hidden;
+ min-height: 100vh;
  }
 
  /* Page Header */
  .page-header {
- background: var(--card-bg);
- border-bottom: 1px solid var(--border-color);
- padding: 24px;
+ background: #ffffff;
+ border-bottom: 1px solid #e0e0e0;
+ padding: 20px 60px;
  margin-bottom: 0;
  display: flex;
  justify-content: space-between;
  align-items: center;
+ max-width: 100%;
  }
 
  .header-left {
@@ -49,27 +52,28 @@
  }
 
  .page-title-section {
- background: var(--accent-light);
- padding: 20px 30px;
- border-bottom: 1px solid var(--border-color);
+ background: #f8f9fa;
+ padding: 30px 60px;
+ border-bottom: 1px solid #e0e0e0;
+ max-width: 1400px;
+ margin: 0 auto;
  }
 
  .page-title {
- font-size: 24px;
+ font-size: 28px;
  font-weight: 700;
- color: var(--text-primary);
- text-transform: uppercase;
- letter-spacing: 0.5px;
+ color: #1a1a1a;
  margin-bottom: 8px;
  }
 
  .page-subtitle {
  font-size: 14px;
- color: var(--text-secondary);
+ color: #666;
  display: flex;
  gap: 16px;
  align-items: center;
  margin-top: 8px;
+ margin-bottom: 20px;
  }
 
  .header-actions {
@@ -79,11 +83,12 @@
  flex-wrap: wrap;
  }
 
+ .header-actions a,
  .btn-secondary {
  padding: 12px 24px;
  background: transparent;
- color: var(--text-primary);
- border: 2px solid var(--border-color);
+ color: #333;
+ border: 2px solid #e0e0e0;
  font-size: 14px;
  font-weight: 500;
  cursor: pointer;
@@ -92,11 +97,38 @@
  align-items: center;
  gap: 8px;
  transition: all 0.3s ease;
+ text-transform: uppercase;
+ letter-spacing: 0.3px;
  }
 
+ .header-actions a:hover,
  .btn-secondary:hover {
- border-color: var(--accent-dark);
- color: var(--accent-dark);
+ border-color: #2c3e50;
+ color: #2c3e50;
+ }
+
+ /* Dark Action Buttons */
+ .btn-dark {
+ padding: 12px 24px;
+ background: #2c3e50;
+ color: #ffffff;
+ border: none;
+ font-size: 14px;
+ font-weight: 500;
+ cursor: pointer;
+ text-decoration: none;
+ display: inline-flex;
+ align-items: center;
+ gap: 8px;
+ transition: all 0.3s ease;
+ text-transform: uppercase;
+ letter-spacing: 0.3px;
+ }
+
+ .btn-dark:hover {
+ background: #34495e;
+ transform: translateY(-1px);
+ box-shadow: 0 4px 8px rgba(0,0,0,0.2);
  }
 
  .btn-danger {
@@ -112,73 +144,69 @@
  align-items: center;
  gap: 8px;
  transition: all 0.3s ease;
+ text-transform: uppercase;
+ letter-spacing: 0.3px;
  }
 
  .btn-danger:hover {
  background: #dc3545;
  color: white;
+ transform: translateY(-1px);
+ box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
  }
 
  .btn-secondary:disabled,
+ .btn-dark:disabled,
  .btn-danger:disabled {
  opacity: 0.5;
  cursor: not-allowed;
+ transform: none;
  }
 
- .org-title {
- font-size: 32px;
- font-weight: 600;
- margin-bottom: 10px;
- }
-
- .org-subtitle {
- display: flex;
- gap: 20px;
- align-items: center;
- flex-wrap: wrap;
- }
-
- .inn-badge {
- background: rgba(255, 255, 255, 0.3);
- padding: 6px 16px;font-family: 'Courier New', monospace;
- font-size: 14px;
- }
-
+ /* Tabs */
  .tabs {
  display: flex;
- background: var(--accent-light);
- border-bottom: 2px solid #dee2e6;
+ background: #f8f9fa;
+ border-bottom: 2px solid #e0e0e0;
  overflow-x: auto;
+ padding: 0;
+ max-width: 1400px;
+ margin: 0 auto;
  }
 
  .tab {
- padding: 16px 24px;
+ padding: 16px 28px;
  background: transparent;
  border: none;
  cursor: pointer;
- font-size: 15px;
- font-weight: 500;
- color: var(--text-secondary);
+ font-size: 14px;
+ font-weight: 600;
+ color: #666;
  white-space: nowrap;
  transition: all 0.3s ease;
  border-bottom: 3px solid transparent;
+ text-transform: uppercase;
+ letter-spacing: 0.5px;
  }
 
  .tab:hover {
- color: var(--accent-dark);
- background: rgba(102, 126, 234, 0.05);
+ color: #333;
+ background: rgba(0, 0, 0, 0.03);
  }
 
  .tab.active {
- color: var(--accent-dark);
- border-bottom-color: var(--accent-dark);
- background: var(--card-bg);
+ color: #2c3e50;
+ border-bottom-color: #2c3e50;
+ background: #ffffff;
  }
 
  .tab-content {
  display: none;
- padding: 30px;
+ padding: 40px 60px;
  animation: fadeIn 0.3s ease;
+ background: #ffffff;
+ max-width: 1400px;
+ margin: 0 auto;
  }
 
  .tab-content.active {
@@ -186,90 +214,107 @@
  }
 
  @keyframes fadeIn {
- from { opacity: 0;}
- to { opacity: 1;}
+ from { opacity: 0; transform: translateY(10px); }
+ to { opacity: 1; transform: translateY(0); }
  }
 
+ /* Info Grid */
  .info-grid {
  display: grid;
- grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+ grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
  gap: 20px;
  margin-bottom: 30px;
  }
 
  .info-card {
- background: var(--accent-light);
- padding: 20px;border-left: 4px solid #667eea;
+ background: #f8f9fa;
+ padding: 20px;
+ border-left: 4px solid #2c3e50;
+ transition: all 0.3s ease;
+ }
+
+ .info-card:hover {
+ transform: translateX(4px);
+ box-shadow: 0 2px 8px rgba(0,0,0,0.08);
  }
 
  .info-label {
- color: var(--text-secondary);
- font-size: 13px;
- font-weight: 500;
+ color: #666;
+ font-size: 12px;
+ font-weight: 600;
  margin-bottom: 8px;
  text-transform: uppercase;
  letter-spacing: 0.5px;
  }
 
  .info-value {
- color: #212529;
+ color: #1a1a1a;
  font-size: 16px;
  font-weight: 500;
  }
 
  .info-value.large {
  font-size: 24px;
- color: var(--accent-dark);
+ color: #2c3e50;
+ font-weight: 700;
  }
 
+ /* Tables */
  .table-responsive {
  overflow-x: auto;
  margin-top: 20px;
+ border: 1px solid #e0e0e0;
  }
 
  table {
  width: 100%;
  border-collapse: collapse;
- background: var(--card-bg);
+ background: #ffffff;
  }
 
  thead {
- background: var(--accent-light);
+ background: #f8f9fa;
  }
 
  th {
- padding: 12px;
+ padding: 14px 16px;
  text-align: left;
  font-weight: 600;
- color: var(--text-secondary);
- border-bottom: 2px solid #dee2e6;
- font-size: 13px;
+ color: #333;
+ border-bottom: 2px solid #e0e0e0;
+ font-size: 12px;
+ text-transform: uppercase;
+ letter-spacing: 0.5px;
  }
 
  td {
- padding: 12px;
- border-bottom: 1px solid #e9ecef;
+ padding: 14px 16px;
+ border-bottom: 1px solid #f0f0f0;
  font-size: 14px;
+ color: #333;
  }
 
  tbody tr:hover {
- background: var(--accent-light);
+ background: #f8f9fa;
  }
 
  .section-title {
- font-size: 20px;
- font-weight: 600;
- color: #212529;
+ font-size: 18px;
+ font-weight: 700;
+ color: #1a1a1a;
  margin-bottom: 20px;
- padding-bottom: 10px;
- border-bottom: 2px solid #e9ecef;
+ padding-bottom: 12px;
+ border-bottom: 2px solid #e0e0e0;
+ text-transform: uppercase;
+ letter-spacing: 0.5px;
  }
 
  .no-data {
  text-align: center;
- padding: 40px;
- color: var(--text-secondary);
- font-size: 16px;
+ padding: 60px 20px;
+ color: #999;
+ font-size: 15px;
+ background: #f8f9fa;
  }
 
  .badge {
@@ -333,10 +378,10 @@
  {% endif %}
  </div>
  <div class="header-actions">
- <a href="/organizations/{{ org.id }}/analytics" class="btn-secondary">АНАЛИТИКА ПРЕДПРИЯТИЯ</a>
- <a href="/organizations/{{ org.id }}/edit" class="btn-secondary">РЕДАКТИРОВАТЬ</a>
- <button onclick="updateFromFNS()" class="btn-secondary" id="fnsBtn">ОБНОВИТЬ ИЗ ФНС</button>
- <button onclick="importFinancials()" class="btn-secondary" id="importBtn">ИМПОРТ БУХОТЧЁТНОСТИ</button>
+ <a href="/organizations/{{ org.id }}/analytics" class="btn-dark">АНАЛИТИКА ПРЕДПРИЯТИЯ</a>
+ <a href="/organizations/{{ org.id }}/edit" class="btn-dark">РЕДАКТИРОВАТЬ</a>
+ <button onclick="updateFromFNS()" class="btn-dark" id="fnsBtn">ОБНОВИТЬ ИЗ ФНС</button>
+ <button onclick="importFinancials()" class="btn-dark" id="importBtn">ИМПОРТ БУХОТЧЁТНОСТИ</button>
  <button onclick="deleteOrganization()" class="btn-danger">УДАЛИТЬ</button>
  </div>
  </div>
