@@ -1,659 +1,990 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
- <meta charset="UTF-8">
- <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <title>Аналитика - МосПром</title>
- <link rel="stylesheet" href="/static/css/main.css">
- <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
- <style>
- * {
- margin: 0;
- padding: 0;
- box-sizing: border-box;
- }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Аналитика - MosProm</title>
+    <link rel="stylesheet" href="/static/css/main.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        body {
+            background: var(--body-bg);
+            margin: 0;
+            padding: 0;
+        }
 
- body {
- font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
- background: var(--accent-dark);
- min-height: 100vh;
- padding: 20px;
- }
+        /* Page Header */
+        .page-header {
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 24px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
- .container {
- max-width: 1400px;
- margin: 0 auto;
- }
+        .page-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
 
- .header {
- background: var(--card-bg);
- padding: 30px;box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
- margin-bottom: 30px;
- display: flex;
- justify-content: space-between;
- align-items: center;
- }
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
 
- .header h1 {
- color: var(--accent-dark);
- font-size: 32px;
- margin: 0;
- }
+        .btn-secondary {
+            padding: 12px 24px;
+            background: transparent;
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
 
- .header-buttons {
- display: flex;
- gap: 10px;
- }
+        .btn-secondary:hover {
+            border-color: var(--accent-dark);
+            color: var(--accent-dark);
+        }
 
- .btn {
- background: var(--accent-dark);
- color: var(--card-bg);
- border: none;
- padding: 12px 24px;cursor: pointer;
- font-size: 14px;
- font-weight: 600;
- text-decoration: none;
- display: inline-block;
- transition: transform 0.2s, box-shadow 0.2s;
- }
+        /* Main Content */
+        .main-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 0 24px 40px 24px;
+        }
 
- .btn:hover {box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
- }
+        /* Filters Section */
+        .filters-section {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
 
- .btn-secondary {
- background: var(--card-bg);
- color: var(--accent-dark);
- border: 2px solid #667eea;
- }
+        .filters-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--border-color);
+        }
 
- /* Summary Cards */
- .summary-grid {
- display: grid;
- grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
- gap: 20px;
- margin-bottom: 30px;
- }
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
 
- .summary-card {
- background: var(--card-bg);
- padding: 25px;box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
- transition: transform 0.2s;
- }
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
 
- .summary-card:hover {}
+        .filter-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
 
- .summary-card-icon {
- font-size: 36px;
- margin-bottom: 10px;
- }
+        .filter-select-wrapper {
+            position: relative;
+        }
 
- .summary-card-title {
- color: var(--text-secondary);
- font-size: 14px;
- margin-bottom: 8px;
- text-transform: uppercase;
- letter-spacing: 0.5px;
- }
+        .filter-select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            background: var(--card-bg);
+            color: var(--text-primary);
+            font-size: 14px;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
 
- .summary-card-value {
- font-size: 32px;
- font-weight: bold;
- color: var(--text-primary);
- margin-bottom: 5px;
- }
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--accent-dark);
+        }
 
- .summary-card-subtitle {
- color: #999;
- font-size: 12px;
- }
+        .filter-multi-select {
+            position: relative;
+        }
 
- .summary-card-change {
- display: inline-block;
- padding: 4px 8px;font-size: 12px;
- font-weight: 600;
- margin-top: 8px;
- }
+        .selected-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            min-height: 45px;
+            background: var(--card-bg);
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
 
- .summary-card-change.positive {
- background: #d4edda;
- color: #155724;
- }
+        .selected-tags:hover {
+            border-color: var(--accent-dark);
+        }
 
- .summary-card-change.negative {
- background: #f8d7da;
- color: #721c24;
- }
+        .tag {
+            background: var(--accent-dark);
+            color: var(--card-bg);
+            padding: 4px 10px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
 
- /* Charts Grid */
- .charts-grid {
- display: grid;
- grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
- gap: 20px;
- margin-bottom: 30px;
- }
+        .tag-remove {
+            cursor: pointer;
+            font-weight: 700;
+        }
 
- .chart-card {
- background: var(--card-bg);
- padding: 25px;box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
- }
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            margin-top: 4px;
+        }
 
- .chart-card-title {
- font-size: 20px;
- font-weight: bold;
- color: var(--text-primary);
- margin-bottom: 20px;
- display: flex;
- align-items: center;
- gap: 10px;
- }
+        .dropdown-menu.active {
+            display: block;
+        }
 
- .chart-container {
- position: relative;
- height: 300px;
- }
+        .dropdown-item {
+            padding: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
 
- .chart-container.large {
- height: 400px;
- }
+        .dropdown-item:hover {
+            background: var(--accent-light);
+        }
 
- /* Top Companies Table */
- .top-companies {
- background: var(--card-bg);
- padding: 25px;box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
- margin-bottom: 30px;
- }
+        .dropdown-item input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
 
- .top-companies h2 {
- font-size: 24px;
- color: var(--text-primary);
- margin-bottom: 20px;
- }
+        .filter-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
 
- .companies-table {
- width: 100%;
- border-collapse: collapse;
- }
+        .btn-filter {
+            padding: 12px 24px;
+            background: var(--accent-dark);
+            color: var(--card-bg);
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
 
- .companies-table th {
- background: var(--accent-light);
- padding: 15px;
- text-align: left;
- font-weight: 600;
- color: var(--text-secondary);
- border-bottom: 2px solid #dee2e6;
- }
+        .btn-filter:hover {
+            background: #5568d3;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
 
- .companies-table td {
- padding: 15px;
- border-bottom: 1px solid #dee2e6;
- }
+        .btn-reset {
+            padding: 12px 24px;
+            background: transparent;
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
 
- .companies-table tr:hover {
- background: var(--accent-light);
- }
+        .btn-reset:hover {
+            border-color: var(--accent-dark);
+            color: var(--accent-dark);
+        }
 
- .company-link {
- color: var(--accent-dark);
- text-decoration: none;
- font-weight: 600;
- }
+        /* Summary Cards */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
 
- .company-link:hover {
- text-decoration: underline;
- }
+        .summary-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 24px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
 
- .rank-badge {
- display: inline-block;
- width: 30px;
- height: 30px;
- line-height: 30px;
- text-align: center;font-weight: bold;
- color: var(--card-bg);
- }
+        .summary-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
 
- .rank-1 { background: var(--accent-dark); }
- .rank-2 { background: var(--accent-dark); }
- .rank-3 { background: var(--accent-dark); }
- .rank-other { background: var(--accent-dark); }
+        .summary-card-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
 
- /* Filters */
- .filters-section {
- background: var(--card-bg);
- padding: 20px;box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
- margin-bottom: 30px;
- }
+        .summary-card-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
 
- .filters-row {
- display: flex;
- gap: 15px;
- flex-wrap: wrap;
- align-items: center;
- }
+        .summary-card-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-primary);
+            font-family: 'Courier New', monospace;
+        }
 
- .filter-group {
- flex: 1;
- min-width: 200px;
- }
+        .summary-card-change {
+            font-size: 13px;
+            font-weight: 600;
+            margin-top: 8px;
+        }
 
- .filter-group label {
- display: block;
- margin-bottom: 5px;
- color: var(--text-secondary);
- font-size: 14px;
- font-weight: 600;
- }
+        .summary-card-change.positive {
+            color: #28a745;
+        }
 
- .filter-group select {
- width: 100%;
- padding: 10px;
- border: 2px solid #dee2e6;font-size: 14px;
- color: var(--text-primary);
- background: var(--card-bg);
- cursor: pointer;
- }
+        .summary-card-change.negative {
+            color: #dc3545;
+        }
 
- .filter-group select:focus {
- outline: none;
- border-color: var(--accent-dark);
- }
+        /* Charts Grid */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+            margin-bottom: 30px;
+        }
 
- /* Loading State */
- .loading {
- text-align: center;
- padding: 40px;
- color: var(--text-secondary);
- }
+        .chart-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 24px;
+        }
 
- .loading-spinner {
- border: 4px solid #f3f3f3;
- border-top: 4px solid #667eea;width: 40px;
- height: 40px;
- animation: spin 1s linear infinite;
- margin: 0 auto 20px;
- }
+        .chart-card.full-width {
+            grid-column: 1 / -1;
+        }
 
- @keyframes spin {
- 0% { transform: rotate(0deg); }
- 100% { transform: rotate(360deg); }
- }
+        .chart-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--border-color);
+        }
 
- /* Responsive */
- @media (max-width: 768px) {
- .charts-grid {
- grid-template-columns: 1fr;
- }
+        .chart-container {
+            position: relative;
+            height: 350px;
+        }
 
- .header {
- flex-direction: column;
- gap: 20px;
- }
+        .chart-container.large {
+            height: 450px;
+        }
 
- .summary-grid {
- grid-template-columns: 1fr;
- }
- }
-</style>
+        /* Top Organizations Table */
+        .table-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 24px;
+            margin-bottom: 30px;
+        }
+
+        .table-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table thead {
+            background: var(--accent-light);
+        }
+
+        .data-table th {
+            padding: 12px;
+            text-align: left;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .data-table td {
+            padding: 12px;
+            font-size: 13px;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border-color);
+            font-family: 'Courier New', monospace;
+        }
+
+        .data-table tbody tr:hover {
+            background: var(--accent-light);
+        }
+
+        .data-table a {
+            color: var(--accent-dark);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .data-table a:hover {
+            text-decoration: underline;
+        }
+
+        /* Range Slider */
+        .range-slider {
+            padding: 20px 0;
+        }
+
+        .range-inputs {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .range-input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            background: var(--card-bg);
+            color: var(--text-primary);
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .range-separator {
+            font-weight: 700;
+            color: var(--text-secondary);
+        }
+    </style>
 </head>
 <body>
- <div class="container">
- <div class="header">
- <h1>Аналитика предприятий</h1>
- <div class="header-buttons">
- <a href="/organizations" class="btn btn-secondary">Назад к списку</a>
- <a href="/" class="btn btn-secondary">Главная</a>
-</div>
-</div>
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1 class="page-title">📊 Аналитика промышленности Москвы</h1>
+        <div class="header-actions">
+            <a href="/organizations" class="btn-secondary">📋 Предприятия</a>
+            <a href="/organizations/create" class="btn-secondary">➕ Добавить</a>
+            <a href="/upload" class="btn-secondary">📤 Загрузка</a>
+        </div>
+    </div>
 
- <!-- Summary Cards -->
- <div class="summary-grid">
- <div class="summary-card">
- <div class="summary-card-icon"></div>
- <div class="summary-card-title">Всего предприятий</div>
- <div class="summary-card-value">{{ summary.total_organizations }}</div>
- <div class="summary-card-subtitle">зарегистрировано в системе</div>
-</div>
+    <div class="main-content">
+        <!-- Filters Section -->
+        <div class="filters-section">
+            <div class="filters-title">🔍 Фильтры</div>
+            <form id="filtersForm" method="get" action="/analytics">
+                <div class="filters-grid">
+                    <!-- Industry Filter (Multi-select) -->
+                    <div class="filter-group">
+                        <label class="filter-label">Отрасль</label>
+                        <div class="filter-multi-select" data-name="industries">
+                            <div class="selected-tags" onclick="toggleDropdown('industries')">
+                                {% if selected_industries %}
+                                    {% for industry in selected_industries %}
+                                        <span class="tag">
+                                            {{ industry }}
+                                            <span class="tag-remove" onclick="removeTag(event, 'industries', '{{ industry }}')">×</span>
+                                        </span>
+                                    {% endfor %}
+                                {% else %}
+                                    <span style="color: var(--text-secondary); font-size: 14px;">Все отрасли</span>
+                                {% endif %}
+                            </div>
+                            <div class="dropdown-menu" id="dropdown-industries">
+                                {% for industry in all_industries %}
+                                    <div class="dropdown-item">
+                                        <input type="checkbox" 
+                                               name="industries" 
+                                               value="{{ industry }}"
+                                               {% if industry in selected_industries %}checked{% endif %}>
+                                        <span>{{ industry }}</span>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
 
- <div class="summary-card">
- <div class="summary-card-icon"></div>
- <div class="summary-card-title">Общая выручка</div>
- <div class="summary-card-value">{{ "%.1f" | format(summary.total_revenue / 1000000000) }} млрд ₽</div>
- <div class="summary-card-subtitle">за последний год</div>
- {% if summary.revenue_change %}
- <span class="summary-card-change {{ 'positive' if summary.revenue_change > 0 else 'negative' }}">
- {{ "%.1f" | format(summary.revenue_change) }}%
-</span>
- {% endif %}
-</div>
+                    <!-- Year Range -->
+                    <div class="filter-group">
+                        <label class="filter-label">Период (годы)</label>
+                        <div class="range-inputs">
+                            <input type="number" 
+                                   name="year_from" 
+                                   class="range-input" 
+                                   placeholder="С"
+                                   value="{{ selected_year_from or (all_years[0] if all_years else '') }}"
+                                   min="{{ all_years[0] if all_years else 2017 }}"
+                                   max="{{ all_years[-1] if all_years else 2024 }}">
+                            <span class="range-separator">—</span>
+                            <input type="number" 
+                                   name="year_to" 
+                                   class="range-input" 
+                                   placeholder="По"
+                                   value="{{ selected_year_to or (all_years[-1] if all_years else '') }}"
+                                   min="{{ all_years[0] if all_years else 2017 }}"
+                                   max="{{ all_years[-1] if all_years else 2024 }}">
+                        </div>
+                    </div>
 
- <div class="summary-card">
- <div class="summary-card-icon"></div>
- <div class="summary-card-title">Всего сотрудников</div>
- <div class="summary-card-value">{{ "{:,}".format(summary.total_employees).replace(",", " ") }}</div>
- <div class="summary-card-subtitle">на всех предприятиях</div>
-</div>
+                    <!-- Company Size Filter (Multi-select) -->
+                    <div class="filter-group">
+                        <label class="filter-label">Размер предприятия</label>
+                        <div class="filter-multi-select" data-name="company_sizes">
+                            <div class="selected-tags" onclick="toggleDropdown('company_sizes')">
+                                {% if selected_company_sizes %}
+                                    {% for size in selected_company_sizes %}
+                                        <span class="tag">
+                                            {{ size }}
+                                            <span class="tag-remove" onclick="removeTag(event, 'company_sizes', '{{ size }}')">×</span>
+                                        </span>
+                                    {% endfor %}
+                                {% else %}
+                                    <span style="color: var(--text-secondary); font-size: 14px;">Все размеры</span>
+                                {% endif %}
+                            </div>
+                            <div class="dropdown-menu" id="dropdown-company_sizes">
+                                {% for size in all_company_sizes %}
+                                    <div class="dropdown-item">
+                                        <input type="checkbox" 
+                                               name="company_sizes" 
+                                               value="{{ size }}"
+                                               {% if size in selected_company_sizes %}checked{% endif %}>
+                                        <span>{{ size }}</span>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
 
- <div class="summary-card">
- <div class="summary-card-icon"></div>
- <div class="summary-card-title">Отрасли</div>
- <div class="summary-card-value">{{ summary.total_industries }}</div>
- <div class="summary-card-subtitle">различных отраслей</div>
-</div>
-</div>
+                    <!-- District Filter (Multi-select) -->
+                    <div class="filter-group">
+                        <label class="filter-label">Район / Округ</label>
+                        <div class="filter-multi-select" data-name="districts">
+                            <div class="selected-tags" onclick="toggleDropdown('districts')">
+                                {% if selected_districts %}
+                                    {% for district in selected_districts %}
+                                        <span class="tag">
+                                            {{ district }}
+                                            <span class="tag-remove" onclick="removeTag(event, 'districts', '{{ district }}')">×</span>
+                                        </span>
+                                    {% endfor %}
+                                {% else %}
+                                    <span style="color: var(--text-secondary); font-size: 14px;">Все районы</span>
+                                {% endif %}
+                            </div>
+                            <div class="dropdown-menu" id="dropdown-districts">
+                                {% for district in all_districts %}
+                                    <div class="dropdown-item">
+                                        <input type="checkbox" 
+                                               name="districts" 
+                                               value="{{ district }}"
+                                               {% if district in selected_districts %}checked{% endif %}>
+                                        <span>{{ district }}</span>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
- <!-- Filters -->
- <div class="filters-section">
- <div class="filters-row">
- <div class="filter-group">
- <label>Период анализа:</label>
- <select id="yearFilter" onchange="updateCharts()">
- <option value="all">Все годы</option>
- {% for year in available_years %}
- <option value="{{ year }}">{{ year }}</option>
- {% endfor %}
-</select>
-</div>
- <div class="filter-group">
- <label>Отрасль:</label>
- <select id="industryFilter" onchange="updateCharts()">
- <option value="all">Все отрасли</option>
- {% for industry in industries %}
- <option value="{{ industry }}">{{ industry }}</option>
- {% endfor %}
-</select>
-</div>
- <div class="filter-group">
- <label>Размер компании:</label>
- <select id="sizeFilter" onchange="updateCharts()">
- <option value="all">Все размеры</option>
- <option value="Крупное">Крупное</option>
- <option value="Среднее">Среднее</option>
- <option value="Малое">Малое</option>
- <option value="Микро">Микро</option>
-</select>
-</div>
-</div>
-</div>
+                <div class="filter-actions">
+                    <button type="button" class="btn-reset" onclick="resetFilters()">Сбросить</button>
+                    <button type="submit" class="btn-filter">Применить фильтры</button>
+                </div>
+            </form>
+        </div>
 
- <!-- Charts -->
- <div class="charts-grid">
- <div class="chart-card">
- <div class="chart-card-title">Динамика выручки</div>
- <div class="chart-container">
- <canvas id="revenueChart"></canvas>
-</div>
-</div>
+        <!-- Summary Cards -->
+        <div class="summary-grid">
+            <div class="summary-card">
+                <div class="summary-card-icon">🏭</div>
+                <div class="summary-card-title">Предприятий</div>
+                <div class="summary-card-value">{{ "{:,}".format(summary.total_organizations).replace(",", " ") }}</div>
+            </div>
 
- <div class="chart-card">
- <div class="chart-card-title">Динамика численности</div>
- <div class="chart-container">
- <canvas id="employeesChart"></canvas>
-</div>
-</div>
+            <div class="summary-card">
+                <div class="summary-card-icon">💰</div>
+                <div class="summary-card-title">Выручка (руб.)</div>
+                <div class="summary-card-value">{{ "{:,.0f}".format(summary.total_revenue).replace(",", " ") }}</div>
+                {% if summary.revenue_change != 0 %}
+                    <div class="summary-card-change {{ 'positive' if summary.revenue_change > 0 else 'negative' }}">
+                        {% if summary.revenue_change > 0 %}
+                            ↑ {{ "{:.1f}".format(summary.revenue_change) }}% к прошлому году
+                        {% else %}
+                            ↓ {{ "{:.1f}".format(-summary.revenue_change) }}% к прошлому году
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
 
- <div class="chart-card">
- <div class="chart-card-title"> Налоговые отчисления</div>
- <div class="chart-container">
- <canvas id="taxesChart"></canvas>
-</div>
-</div>
+            <div class="summary-card">
+                <div class="summary-card-icon">👥</div>
+                <div class="summary-card-title">Сотрудников</div>
+                <div class="summary-card-value">{{ "{:,}".format(summary.total_employees).replace(",", " ") }}</div>
+            </div>
 
- <div class="chart-card">
- <div class="chart-card-title">Распределение по отраслям</div>
- <div class="chart-container">
- <canvas id="industryChart"></canvas>
-</div>
-</div>
-</div>
+            <div class="summary-card">
+                <div class="summary-card-icon">📈</div>
+                <div class="summary-card-title">Инвестиции (руб.)</div>
+                <div class="summary-card-value">{{ "{:,.0f}".format(summary.total_investments).replace(",", " ") }}</div>
+            </div>
 
- <!-- Large chart for detailed analysis -->
- <div class="chart-card">
- <div class="chart-card-title">Комплексный анализ показателей</div>
- <div class="chart-container large">
- <canvas id="complexChart"></canvas>
-</div>
-</div>
+            <div class="summary-card">
+                <div class="summary-card-icon">🌍</div>
+                <div class="summary-card-title">Экспорт (руб.)</div>
+                <div class="summary-card-value">{{ "{:,.0f}".format(summary.total_export).replace(",", " ") }}</div>
+            </div>
 
- <!-- Top Companies Table -->
- <div class="top-companies">
- <h2> Топ предприятий по выручке</h2>
- <table class="companies-table">
- <thead>
- <tr>
- <th>#</th>
- <th>Название</th>
- <th>Отрасль</th>
- <th>Выручка (последний год)</th>
- <th>Сотрудники</th>
- <th>Средняя зарплата</th>
-</tr>
-</thead>
- <tbody>
- {% for org in top_organizations %}
- <tr>
- <td>
- <span class="rank-badge rank-{{ loop.index if loop.index <= 3 else 'other' }}">
- {{ loop.index }}
-</span>
-</td>
- <td>
- <a href="/organizations/{{ org.id }}" class="company-link">{{ org.name }}</a>
-</td>
- <td>{{ org.main_industry or '-' }}</td>
- <td><strong>{{ "{:,.0f}".format(org.revenue).replace(",", " ") }} ₽</strong></td>
- <td>{{ "{:,}".format(org.employees).replace(",", " ") if org.employees else '-' }}</td>
- <td>{{ "{:,.0f}".format(org.avg_salary).replace(",", " ") if org.avg_salary else '-' }} ₽</td>
-</tr>
- {% endfor %}
-</tbody>
-</table>
-</div>
-</div>
+            <div class="summary-card">
+                <div class="summary-card-icon">💼</div>
+                <div class="summary-card-title">Налоги в Москву (руб.)</div>
+                <div class="summary-card-value">{{ "{:,.0f}".format(summary.total_taxes).replace(",", " ") }}</div>
+            </div>
 
- <script>
- // Chart colors
- const colors = {
- primary: 'rgba(102, 126, 234, 0.8)',
- secondary: 'rgba(118, 75, 162, 0.8)',
- success: 'rgba(40, 167, 69, 0.8)',
- warning: 'rgba(255, 193, 7, 0.8)',
- danger: 'rgba(220, 53, 69, 0.8)',
- info: 'rgba(23, 162, 184, 0.8)'
- };
+            <div class="summary-card">
+                <div class="summary-card-icon">💵</div>
+                <div class="summary-card-title">Средняя зарплата (руб.)</div>
+                <div class="summary-card-value">{{ "{:,.0f}".format(summary.avg_salary).replace(",", " ") }}</div>
+            </div>
+        </div>
 
- // Revenue Chart
- const revenueData = {{ revenue_by_year | tojson }};
- const revenueCtx = document.getElementById('revenueChart').getContext('2d');
- const revenueChart = new Chart(revenueCtx, {
- type: 'line',
- data: {
- labels: revenueData.map(d => d.year),
- datasets: [{
- label: 'Выручка (млрд ₽)',
- data: revenueData.map(d => d.revenue / 1000000000),
- borderColor: colors.primary,
- backgroundColor: colors.primary.replace('0.8', '0.2'),
- tension: 0.4,
- fill: true
- }]
- },
- options: {
- responsive: true,
- maintainAspectRatio: false,
- plugins: {
- legend: { display: false }
- },
- scales: {
- y: {
- beginAtZero: true,
- ticks: {
- callback: function(value) {
- return value.toFixed(1) + ' млрд ₽';
- }
- }
- }
- }
- }
- });
+        <!-- Charts -->
+        <div class="charts-grid">
+            <!-- Revenue by Year -->
+            <div class="chart-card">
+                <div class="chart-title">Выручка по годам</div>
+                <div class="chart-container">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
 
- // Employees Chart
- const employeesData = {{ employees_by_year | tojson }};
- const employeesCtx = document.getElementById('employeesChart').getContext('2d');
- const employeesChart = new Chart(employeesCtx, {
- type: 'bar',
- data: {
- labels: employeesData.map(d => d.year),
- datasets: [{
- label: 'Количество сотрудников',
- data: employeesData.map(d => d.employees),
- backgroundColor: colors.success,
- borderRadius: 8
- }]
- },
- options: {
- responsive: true,
- maintainAspectRatio: false,
- plugins: {
- legend: { display: false }
- },
- scales: {
- y: {
- beginAtZero: true,
- ticks: {
- callback: function(value) {
- return value.toLocaleString('ru-RU');
- }
- }
- }
- }
- }
- });
+            <!-- Employees by Year -->
+            <div class="chart-card">
+                <div class="chart-title">Численность сотрудников</div>
+                <div class="chart-container">
+                    <canvas id="employeesChart"></canvas>
+                </div>
+            </div>
 
- // Taxes Chart
- const taxesData = {{ taxes_by_year | tojson }};
- const taxesCtx = document.getElementById('taxesChart').getContext('2d');
- const taxesChart = new Chart(taxesCtx, {
- type: 'line',
- data: {
- labels: taxesData.map(d => d.year),
- datasets: [{
- label: 'Налоговые отчисления (млн ₽)',
- data: taxesData.map(d => d.taxes / 1000000),
- borderColor: colors.warning,
- backgroundColor: colors.warning.replace('0.8', '0.2'),
- tension: 0.4,
- fill: true
- }]
- },
- options: {
- responsive: true,
- maintainAspectRatio: false,
- plugins: {
- legend: { display: false }
- },
- scales: {
- y: {
- beginAtZero: true,
- ticks: {
- callback: function(value) {
- return value.toFixed(1) + ' млн ₽';
- }
- }
- }
- }
- }
- });
+            <!-- Investments by Year -->
+            <div class="chart-card">
+                <div class="chart-title">Инвестиции по годам</div>
+                <div class="chart-container">
+                    <canvas id="investmentsChart"></canvas>
+                </div>
+            </div>
 
- // Industry Distribution Chart
- const industryData = {{ industry_distribution | tojson }};
- const industryCtx = document.getElementById('industryChart').getContext('2d');
- const industryChart = new Chart(industryCtx, {
- type: 'doughnut',
- data: {
- labels: industryData.map(d => d.industry),
- datasets: [{
- data: industryData.map(d => d.count),
- backgroundColor: [
- colors.primary,
- colors.secondary,
- colors.success,
- colors.warning,
- colors.danger,
- colors.info
- ]
- }]
- },
- options: {
- responsive: true,
- maintainAspectRatio: false,
- plugins: {
- legend: {
- position: 'right'
- }
- }
- }
- });
+            <!-- Export by Year -->
+            <div class="chart-card">
+                <div class="chart-title">Экспорт по годам</div>
+                <div class="chart-container">
+                    <canvas id="exportChart"></canvas>
+                </div>
+            </div>
 
- // Complex Analysis Chart
- const complexData = {{ complex_metrics | tojson }};
- const complexCtx = document.getElementById('complexChart').getContext('2d');
- const complexChart = new Chart(complexCtx, {
- type: 'line',
- data: {
- labels: complexData.map(d => d.year),
- datasets: [
- {
- label: 'Выручка (млрд ₽)',
- data: complexData.map(d => d.revenue / 1000000000),
- borderColor: colors.primary,
- backgroundColor: colors.primary.replace('0.8', '0.2'),
- yAxisID: 'y',
- tension: 0.4
- },
- {
- label: 'Прибыль (млн ₽)',
- data: complexData.map(d => d.profit / 1000000),
- borderColor: colors.success,
- backgroundColor: colors.success.replace('0.8', '0.2'),
- yAxisID: 'y',
- tension: 0.4
- },
- {
- label: 'Инвестиции (млн ₽)',
- data: complexData.map(d => d.investments / 1000000),
- borderColor: colors.secondary,
- backgroundColor: colors.secondary.replace('0.8', '0.2'),
- yAxisID: 'y',
- tension: 0.4
- }
- ]
- },
- options: {
- responsive: true,
- maintainAspectRatio: false,
- interaction: {
- mode: 'index',
- intersect: false
- },
- scales: {
- y: {
- type: 'linear',
- display: true,
- position: 'left',
- beginAtZero: true
- }
- }
- }
- });
+            <!-- Taxes by Year -->
+            <div class="chart-card">
+                <div class="chart-title">Налоги в Москву по годам</div>
+                <div class="chart-container">
+                    <canvas id="taxesChart"></canvas>
+                </div>
+            </div>
 
- // Update charts function (placeholder for future filtering)
- function updateCharts() {
- const year = document.getElementById('yearFilter').value;
- const industry = document.getElementById('industryFilter').value;
- const size = document.getElementById('sizeFilter').value;
- 
- // TODO: Implement AJAX call to update charts with filters
- console.log('Filters:', { year, industry, size });
- }
-</script>
+            <!-- Average Salary by Year -->
+            <div class="chart-card">
+                <div class="chart-title">Средняя зарплата по годам</div>
+                <div class="chart-container">
+                    <canvas id="salaryChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Revenue by Industry (Bar Chart) -->
+            <div class="chart-card full-width">
+                <div class="chart-title">Выручка по отраслям (топ-10)</div>
+                <div class="chart-container">
+                    <canvas id="industryChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Organizations Table -->
+        <div class="table-card">
+            <div class="table-title">🏆 Топ-10 предприятий по выручке</div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Название</th>
+                        <th>Отрасль</th>
+                        <th>Выручка (руб.)</th>
+                        <th>Сотрудников</th>
+                        <th>Ср. зарплата (руб.)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for org in top_organizations %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td><a href="/organizations/{{ org.id }}">{{ org.name }}</a></td>
+                            <td>{{ org.main_industry }}</td>
+                            <td>{{ "{:,.0f}".format(org.revenue).replace(",", " ") }}</td>
+                            <td>{{ "{:,}".format(org.employees).replace(",", " ") }}</td>
+                            <td>{{ "{:,.0f}".format(org.avg_salary).replace(",", " ") if org.avg_salary else '-' }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Chart.js color palette
+        const colors = {
+            primary: 'rgba(102, 126, 234, 0.8)',
+            secondary: 'rgba(118, 75, 162, 0.8)',
+            success: 'rgba(40, 167, 69, 0.8)',
+            warning: 'rgba(255, 193, 7, 0.8)',
+            danger: 'rgba(220, 53, 69, 0.8)',
+            info: 'rgba(23, 162, 184, 0.8)',
+        };
+
+        // Revenue by Year Chart
+        const revenueData = {{ revenue_by_year | tojson }};
+        const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+        new Chart(revenueCtx, {
+            type: 'line',
+            data: {
+                labels: revenueData.map(d => d.year),
+                datasets: [{
+                    label: 'Выручка (₽)',
+                    data: revenueData.map(d => d.revenue),
+                    borderColor: colors.primary,
+                    backgroundColor: colors.primary.replace('0.8', '0.2'),
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return (value / 1000000000).toFixed(1) + ' млрд ₽';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Employees by Year Chart
+        const employeesData = {{ employees_by_year | tojson }};
+        const employeesCtx = document.getElementById('employeesChart').getContext('2d');
+        new Chart(employeesCtx, {
+            type: 'line',
+            data: {
+                labels: employeesData.map(d => d.year),
+                datasets: [{
+                    label: 'Сотрудников',
+                    data: employeesData.map(d => d.employees),
+                    borderColor: colors.info,
+                    backgroundColor: colors.info.replace('0.8', '0.2'),
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+
+        // Investments by Year Chart
+        const investmentsData = {{ investments_by_year | tojson }};
+        const investmentsCtx = document.getElementById('investmentsChart').getContext('2d');
+        new Chart(investmentsCtx, {
+            type: 'bar',
+            data: {
+                labels: investmentsData.map(d => d.year),
+                datasets: [{
+                    label: 'Инвестиции (₽)',
+                    data: investmentsData.map(d => d.investments),
+                    backgroundColor: colors.success,
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return (value / 1000000).toFixed(0) + ' млн ₽';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Export by Year Chart
+        const exportData = {{ export_by_year | tojson }};
+        const exportCtx = document.getElementById('exportChart').getContext('2d');
+        new Chart(exportCtx, {
+            type: 'bar',
+            data: {
+                labels: exportData.map(d => d.year),
+                datasets: [{
+                    label: 'Экспорт (₽)',
+                    data: exportData.map(d => d.export),
+                    backgroundColor: colors.warning,
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return (value / 1000000).toFixed(0) + ' млн ₽';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Taxes by Year Chart
+        const taxesData = {{ taxes_by_year | tojson }};
+        const taxesCtx = document.getElementById('taxesChart').getContext('2d');
+        new Chart(taxesCtx, {
+            type: 'bar',
+            data: {
+                labels: taxesData.map(d => d.year),
+                datasets: [{
+                    label: 'Налоги (₽)',
+                    data: taxesData.map(d => d.taxes),
+                    backgroundColor: colors.danger,
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return (value / 1000000).toFixed(0) + ' млн ₽';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Average Salary by Year Chart
+        const salaryData = {{ salary_by_year | tojson }};
+        const salaryCtx = document.getElementById('salaryChart').getContext('2d');
+        new Chart(salaryCtx, {
+            type: 'line',
+            data: {
+                labels: salaryData.map(d => d.year),
+                datasets: [{
+                    label: 'Средняя зарплата (₽)',
+                    data: salaryData.map(d => d.salary),
+                    borderColor: colors.secondary,
+                    backgroundColor: colors.secondary.replace('0.8', '0.2'),
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return (value / 1000).toFixed(0) + ' тыс ₽';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Revenue by Industry Chart
+        const industryData = {{ revenue_by_industry | tojson }};
+        const industryCtx = document.getElementById('industryChart').getContext('2d');
+        new Chart(industryCtx, {
+            type: 'bar',
+            data: {
+                labels: industryData.map(d => d.industry),
+                datasets: [{
+                    label: 'Выручка (₽)',
+                    data: industryData.map(d => d.revenue),
+                    backgroundColor: colors.primary,
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return (value / 1000000000).toFixed(1) + ' млрд ₽';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Multi-select dropdown logic
+        function toggleDropdown(name) {
+            const dropdown = document.getElementById(`dropdown-${name}`);
+            const allDropdowns = document.querySelectorAll('.dropdown-menu');
+            
+            allDropdowns.forEach(d => {
+                if (d !== dropdown) {
+                    d.classList.remove('active');
+                }
+            });
+            
+            dropdown.classList.toggle('active');
+        }
+
+        function removeTag(event, name, value) {
+            event.stopPropagation();
+            const checkbox = document.querySelector(`input[name="${name}"][value="${value}"]`);
+            if (checkbox) {
+                checkbox.checked = false;
+            }
+            document.getElementById('filtersForm').submit();
+        }
+
+        function resetFilters() {
+            window.location.href = '/analytics';
+        }
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.filter-multi-select')) {
+                document.querySelectorAll('.dropdown-menu').forEach(d => {
+                    d.classList.remove('active');
+                });
+            }
+        });
+
+        // Prevent dropdown from closing when clicking inside
+        document.querySelectorAll('.dropdown-menu').forEach(menu => {
+            menu.addEventListener('click', function(event) {
+                event.stopPropagation();
+            });
+        });
+    </script>
 </body>
 </html>
