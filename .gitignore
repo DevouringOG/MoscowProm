@@ -1,4 +1,3 @@
-# Python
 __pycache__/
 *.py[cod]
 *$py.class
@@ -19,57 +18,31 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-
-# Virtual environments
 venv/
 ENV/
 env/
 .venv
-
-# Poetry
 poetry.lock
-
-# IDE
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 .DS_Store
-
-# Logs
 logs/
 *.log
-
-# Database
 postgres_data/
 *.db
 *.sqlite
-
-# Redis
-redis_data/
-dump.rdb
-
-# Uploads
 uploads/
 *.xlsx
 *.xls
-
-# Environment variables
 .env
 .env.local
 .env.*.local
-
-# pytest
 .pytest_cache/
 .coverage
 htmlcov/
-
-# Alembic
 alembic/versions/*.pyc
-
-# Docker
 .dockerignore
-
-# OS
 Thumbs.db

@@ -16,10 +16,6 @@ def get_database_url() -> str:
     db = settings.database
     return f"postgresql://{db.user}:{db.password}@{db.host}:{db.port}/{db.name}"
 
-def get_redis_url() -> str:
-    r = settings.redis
-    return f"redis://{r.host}:{r.port}/{r.db}"
-
 def ensure_directories() -> None:
     directories = [
         BASE_DIR / settings.logging.log_dir,
