@@ -5,6 +5,7 @@
  <meta name="viewport" content="width=device-width, initial-scale=1.0">
  <title>Список организаций - MosProm</title>
  <link rel="stylesheet" href="/static/css/main.css">
+ <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
  <style>
  body {
  background: var(--body-bg);
@@ -524,6 +525,267 @@
  .empty-state p {
  font-size: 16px;
  }
+
+ /* Column Settings Button */
+ .column-settings-btn {
+ background: transparent;
+ border: none;
+ cursor: pointer;
+ padding: 8px;
+ display: inline-flex;
+ align-items: center;
+ justify-content: center;
+ transition: all 0.3s ease;
+ }
+
+ .column-settings-btn:hover {
+ background: rgba(0, 0, 0, 0.05);
+ }
+
+ .column-settings-btn svg {
+ width: 20px;
+ height: 20px;
+ fill: var(--text-secondary);
+ }
+
+ /* Modal Overlay */
+ .modal-overlay {
+ display: none;
+ position: fixed;
+ top: 0;
+ left: 0;
+ width: 100%;
+ height: 100%;
+ background: rgba(0, 0, 0, 0.5);
+ z-index: 9998;
+ }
+
+ .modal-overlay.active {
+ display: block;
+ }
+
+ /* Column Settings Modal */
+ .column-settings-modal {
+ display: none;
+ position: fixed;
+ top: 50%;
+ left: 50%;
+ transform: translate(-50%, -50%);
+ background: white;
+ border-radius: 8px;
+ box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+ z-index: 9999;
+ width: 90%;
+ max-width: 600px;
+ max-height: 80vh;
+ overflow: hidden;
+ flex-direction: column;
+ }
+
+ .column-settings-modal.active {
+ display: flex;
+ }
+
+ .modal-header {
+ padding: 20px 24px;
+ border-bottom: 1px solid #e0e0e0;
+ display: flex;
+ justify-content: space-between;
+ align-items: center;
+ }
+
+ .modal-header h2 {
+ margin: 0;
+ font-size: 20px;
+ font-weight: 600;
+ color: var(--text-primary);
+ }
+
+ .modal-close {
+ background: none;
+ border: none;
+ font-size: 24px;
+ cursor: pointer;
+ color: var(--text-secondary);
+ padding: 0;
+ width: 32px;
+ height: 32px;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ border-radius: 4px;
+ transition: background 0.2s;
+ }
+
+ .modal-close:hover {
+ background: rgba(0, 0, 0, 0.05);
+ }
+
+ .modal-body {
+ padding: 20px;
+ display: flex;
+ flex-direction: column;
+ gap: 16px;
+ overflow-y: hidden;
+ flex: 1;
+ }
+
+ .column-list {
+ list-style: none;
+ padding: 0;
+ margin: 0;
+ max-height: 400px;
+ overflow-y: auto;
+ padding-right: 8px;
+ }
+
+ .column-list::-webkit-scrollbar {
+ width: 8px;
+ }
+
+ .column-list::-webkit-scrollbar-track {
+ background: #f1f1f1;
+ border-radius: 4px;
+ }
+
+ .column-list::-webkit-scrollbar-thumb {
+ background: #888;
+ border-radius: 4px;
+ }
+
+ .column-list::-webkit-scrollbar-thumb:hover {
+ background: #555;
+ }
+
+ .column-item {
+ display: flex;
+ align-items: center;
+ padding: 12px 16px;
+ background: #f8f9fa;
+ margin-bottom: 8px;
+ border-radius: 6px;
+ cursor: move;
+ transition: all 0.2s;
+ border: 1px solid transparent;
+ }
+
+ .column-item:hover {
+ background: #e9ecef;
+ box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+ }
+
+ .column-item.sortable-ghost {
+ opacity: 0.4;
+ background: #dee2e6;
+ }
+
+ .column-item.sortable-drag {
+ box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+ }
+
+ .drag-handle {
+ margin-right: 12px;
+ color: #6c757d;
+ cursor: grab;
+ display: flex;
+ flex-direction: column;
+ gap: 2px;
+ }
+
+ .drag-handle:active {
+ cursor: grabbing;
+ }
+
+ .drag-handle span {
+ width: 18px;
+ height: 2px;
+ background: currentColor;
+ border-radius: 1px;
+ }
+
+ .column-checkbox {
+ margin-right: 12px;
+ width: 18px;
+ height: 18px;
+ cursor: pointer;
+ }
+
+ .column-label {
+ flex: 1;
+ font-size: 14px;
+ font-weight: 500;
+ color: var(--text-primary);
+ cursor: pointer;
+ }
+
+ .modal-actions {
+ display: flex;
+ justify-content: space-between;
+ align-items: center;
+ gap: 12px;
+ padding-top: 16px;
+ border-top: 1px solid #e0e0e0;
+ margin-top: auto;
+ }
+
+ .modal-actions-right {
+ display: flex;
+ gap: 12px;
+ }
+
+ .btn-reset {
+ padding: 10px 20px;
+ background: transparent;
+ color: #6c757d;
+ border: 1px solid #dee2e6;
+ border-radius: 4px;
+ cursor: pointer;
+ font-size: 14px;
+ font-weight: 500;
+ transition: all 0.2s;
+ }
+
+ .btn-reset:hover {
+ background: #f8f9fa;
+ border-color: #adb5bd;
+ }
+
+ .btn-cancel {
+ padding: 10px 20px;
+ background: transparent;
+ color: var(--text-primary);
+ border: 1px solid #dee2e6;
+ border-radius: 4px;
+ cursor: pointer;
+ font-size: 14px;
+ font-weight: 500;
+ transition: all 0.2s;
+ }
+
+ .btn-cancel:hover {
+ background: #f8f9fa;
+ }
+
+ .btn-apply {
+ padding: 10px 24px;
+ background: var(--accent-dark);
+ color: white;
+ border: none;
+ border-radius: 4px;
+ cursor: pointer;
+ font-size: 14px;
+ font-weight: 500;
+ transition: all 0.2s;
+ }
+
+ .btn-apply:hover {
+ background: #5568d3;
+ }
+
+ /* Hide columns dynamically */
+ .column-hidden {
+ display: none !important;
+ }
 </style>
 </head>
 <body>
@@ -806,36 +1068,101 @@
 
  <div class="table-container">
  {% if organizations %}
- <table>
+ <div style="display: flex; justify-content: flex-end; margin-bottom: 12px;">
+ <button class="column-settings-btn" onclick="openColumnSettings()" title="Настроить столбцы">
+ <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+ <path d="M12 15.5A3.5 3.5 0 0 1 8.5 12 3.5 3.5 0 0 1 12 8.5a3.5 3.5 0 0 1 3.5 3.5 3.5 3.5 0 0 1-3.5 3.5m7.43-2.53c.04-.32.07-.64.07-.97 0-.33-.03-.66-.07-1l2.11-1.63c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.31-.61-.22l-2.49 1c-.52-.39-1.06-.73-1.69-.98l-.37-2.65c-.04-.24-.25-.42-.5-.42h-4c-.25 0-.46.18-.5.42l-.37 2.65c-.63.25-1.17.59-1.69.98l-2.49-1c-.22-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64L4.57 11c-.04.34-.07.67-.07 1 0 .33.03.65.07.97l-2.11 1.66c-.19.15-.25.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1.01c.52.4 1.06.74 1.69.99l.37 2.65c.04.24.25.42.5.42h4c.25 0 .46-.18.5-.42l.37-2.65c.63-.26 1.17-.59 1.69-.99l2.49 1.01c.22.08.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.66z"/>
+ </svg>
+ </button>
+ </div>
+ <table id="organizationsTable">
  <thead>
- <tr>
- <th>Название</th>
- <th>ИНН</th>
- <th>Отрасль</th>
- <th>Статус</th>
- <th>Район</th>
- <th>Размер</th>
+ <tr id="tableHeader">
+ <th data-column="name">Название</th>
+ <th data-column="inn">ИНН</th>
+ <th data-column="industry">Отрасль</th>
+ <th data-column="subindustry">Подотрасль</th>
+ <th data-column="status">Статус</th>
+ <th data-column="district">Округ</th>
+ <th data-column="region">Район</th>
+ <th data-column="size">Размер</th>
+ <th data-column="msp_status">Статус МСП</th>
+ <th data-column="okved">ОКВЭД</th>
+ <th data-column="reg_date">Дата регистрации</th>
+ <th data-column="head">Руководитель</th>
+ <th data-column="phone">Телефон</th>
+ <th data-column="email">Email</th>
+ <th data-column="website">Сайт</th>
+ <th data-column="address">Адрес</th>
+ <th data-column="employees">Численность</th>
+ <th data-column="revenue">Выручка</th>
+ <th data-column="profit">Прибыль</th>
+ <th data-column="system_critical">Системообразующая</th>
 </tr>
 </thead>
  <tbody>
  {% for org in organizations %}
  <tr>
- <td>
+ <td data-column="name">
  <a href="/organizations/{{ org.id }}" class="org-name">
  {{ org.name }}
 </a>
 </td>
- <td>
+ <td data-column="inn">
  <span class="inn-badge">{{ org.inn }}</span>
 </td>
- <td>{{ org.main_industry or '—' }}</td>
- <td>
+ <td data-column="industry">{{ org.main_industry or '—' }}</td>
+ <td data-column="subindustry">{{ org.main_subindustry or '—' }}</td>
+ <td data-column="status">
  <span class="status-badge status-active">
  {{ org.status_final or org.status_spark or 'Активно' }}
 </span>
 </td>
- <td>{{ org.region or org.district or '—' }}</td>
- <td>{{ org.company_size or org.company_size_2022 or '—' }}</td>
+ <td data-column="district">{{ org.district or '—' }}</td>
+ <td data-column="region">{{ org.region or '—' }}</td>
+ <td data-column="size">{{ org.company_size or org.company_size_2022 or '—' }}</td>
+ <td data-column="msp_status">{{ org.msp_status or '—' }}</td>
+ <td data-column="okved">{{ org.main_okved or '—' }}</td>
+ <td data-column="reg_date">{{ org.registration_date.strftime('%d.%m.%Y') if org.registration_date else '—' }}</td>
+ <td data-column="head">{{ org.head_name or '—' }}</td>
+ <td data-column="phone">{{ org.phone or '—' }}</td>
+ <td data-column="email">{{ org.email or '—' }}</td>
+ <td data-column="website">
+ {% if org.website %}
+ <a href="{{ org.website }}" target="_blank">{{ org.website[:30] }}...</a>
+ {% else %}
+ —
+ {% endif %}
+</td>
+ <td data-column="address">{{ org.legal_address or '—' }}</td>
+ <td data-column="employees">
+ {% if org.metrics %}
+ {{ org.metrics[-1].total_employees or '—' }}
+ {% else %}
+ —
+ {% endif %}
+</td>
+ <td data-column="revenue">
+ {% if org.metrics %}
+ {{ '{:,.0f}'.format(org.metrics[-1].revenue).replace(',', ' ') if org.metrics[-1].revenue else '—' }}
+ {% else %}
+ —
+ {% endif %}
+</td>
+ <td data-column="profit">
+ {% if org.metrics %}
+ {{ '{:,.0f}'.format(org.metrics[-1].profit).replace(',', ' ') if org.metrics[-1].profit else '—' }}
+ {% else %}
+ —
+ {% endif %}
+</td>
+ <td data-column="system_critical">
+ {% if org.is_system_critical %}
+ <span class="badge badge-success">Да</span>
+ {% else %}
+ —
+ {% endif %}
+</td>
 </tr>
  {% endfor %}
 </tbody>
@@ -996,6 +1323,264 @@
  const exportUrl = '/organizations/export?' + params.toString();
  window.location.href = exportUrl;
  }
+
+ // === Column Customization Feature ===
+
+ // Default visible columns (6 currently visible)
+ const DEFAULT_COLUMNS = ['name', 'inn', 'industry', 'status', 'region', 'size'];
+
+ // All available columns
+ const ALL_COLUMNS = [
+ { id: 'name', label: 'Название' },
+ { id: 'inn', label: 'ИНН' },
+ { id: 'industry', label: 'Отрасль' },
+ { id: 'subindustry', label: 'Подотрасль' },
+ { id: 'status', label: 'Статус' },
+ { id: 'district', label: 'Округ' },
+ { id: 'region', label: 'Район' },
+ { id: 'size', label: 'Размер' },
+ { id: 'msp_status', label: 'Статус МСП' },
+ { id: 'okved', label: 'ОКВЭД' },
+ { id: 'reg_date', label: 'Дата регистрации' },
+ { id: 'head', label: 'Руководитель' },
+ { id: 'phone', label: 'Телефон' },
+ { id: 'email', label: 'Email' },
+ { id: 'website', label: 'Сайт' },
+ { id: 'address', label: 'Адрес' },
+ { id: 'employees', label: 'Численность' },
+ { id: 'revenue', label: 'Выручка' },
+ { id: 'profit', label: 'Прибыль' },
+ { id: 'system_critical', label: 'Системообразующая' }
+];
+
+ let sortable = null;
+
+ // Load column settings from localStorage
+ function loadColumnSettings() {
+ const saved = localStorage.getItem('organizationColumns');
+ if (saved) {
+ try {
+ const settings = JSON.parse(saved);
+ return {
+ visible: settings.visible || DEFAULT_COLUMNS,
+ order: settings.order || ALL_COLUMNS.map(c => c.id)
+ };
+ } catch (e) {
+ console.error('Failed to parse column settings:', e);
+ }
+ }
+ return {
+ visible: DEFAULT_COLUMNS,
+ order: ALL_COLUMNS.map(c => c.id)
+ };
+ }
+
+ // Save column settings to localStorage
+ function saveColumnSettings(visible, order) {
+ localStorage.setItem('organizationColumns', JSON.stringify({ visible, order }));
+ }
+
+ // Apply column visibility to table
+ function applyColumnVisibility(visibleColumns) {
+ const table = document.getElementById('organizationsTable');
+ const headers = table.querySelectorAll('thead th[data-column]');
+ const rows = table.querySelectorAll('tbody tr');
+
+ // Hide/show headers
+ headers.forEach(th => {
+ const column = th.getAttribute('data-column');
+ if (visibleColumns.includes(column)) {
+ th.classList.remove('column-hidden');
+ } else {
+ th.classList.add('column-hidden');
+ }
+ });
+
+ // Hide/show cells
+ rows.forEach(row => {
+ const cells = row.querySelectorAll('td[data-column]');
+ cells.forEach(td => {
+ const column = td.getAttribute('data-column');
+ if (visibleColumns.includes(column)) {
+ td.classList.remove('column-hidden');
+ } else {
+ td.classList.add('column-hidden');
+ }
+ });
+ });
+ }
+
+ // Reorder columns in table
+ function applyColumnOrder(order) {
+ const table = document.getElementById('organizationsTable');
+ const headerRow = document.getElementById('tableHeader');
+ const rows = table.querySelectorAll('tbody tr');
+
+ // Create a map of column elements
+ const headerMap = new Map();
+ headerRow.querySelectorAll('th[data-column]').forEach(th => {
+ headerMap.set(th.getAttribute('data-column'), th);
+ });
+
+ // Reorder headers
+ const fragment = document.createDocumentFragment();
+ order.forEach(colId => {
+ if (headerMap.has(colId)) {
+ fragment.appendChild(headerMap.get(colId));
+ }
+ });
+ headerRow.innerHTML = '';
+ headerRow.appendChild(fragment);
+
+ // Reorder cells in each row
+ rows.forEach(row => {
+ const cellMap = new Map();
+ row.querySelectorAll('td[data-column]').forEach(td => {
+ cellMap.set(td.getAttribute('data-column'), td);
+ });
+
+ const rowFragment = document.createDocumentFragment();
+ order.forEach(colId => {
+ if (cellMap.has(colId)) {
+ rowFragment.appendChild(cellMap.get(colId));
+ }
+ });
+ row.innerHTML = '';
+ row.appendChild(rowFragment);
+ });
+ }
+
+ // Open column settings modal
+ function openColumnSettings() {
+ const modal = document.getElementById('columnSettingsModal');
+ const overlay = document.getElementById('columnModalOverlay');
+ const columnList = document.getElementById('columnList');
+
+ // Load current settings
+ const settings = loadColumnSettings();
+
+ // Build column list
+ columnList.innerHTML = '';
+ settings.order.forEach(colId => {
+ const column = ALL_COLUMNS.find(c => c.id === colId);
+ if (!column) return;
+
+ const li = document.createElement('li');
+ li.className = 'column-item';
+ li.setAttribute('data-column', column.id);
+
+ const isVisible = settings.visible.includes(column.id);
+
+ li.innerHTML = `
+ <div class="drag-handle">
+ <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+ <circle cx="4" cy="3" r="1" fill="currentColor"/>
+ <circle cx="12" cy="3" r="1" fill="currentColor"/>
+ <circle cx="4" cy="8" r="1" fill="currentColor"/>
+ <circle cx="12" cy="8" r="1" fill="currentColor"/>
+ <circle cx="4" cy="13" r="1" fill="currentColor"/>
+ <circle cx="12" cy="13" r="1" fill="currentColor"/>
+</svg>
+</div>
+ <input type="checkbox" class="column-checkbox" id="col-${column.id}" ${isVisible ? 'checked' : ''}>
+ <label class="column-label" for="col-${column.id}">${column.label}</label>
+ `;
+
+ columnList.appendChild(li);
+ });
+
+ // Initialize sortable
+ if (sortable) {
+ sortable.destroy();
+ }
+ sortable = Sortable.create(columnList, {
+ handle: '.drag-handle',
+ animation: 150,
+ ghostClass: 'sortable-ghost'
+ });
+
+ // Show modal
+ overlay.style.display = 'block';
+ modal.style.display = 'block';
+ }
+
+ // Close column settings modal
+ function closeColumnSettings() {
+ const modal = document.getElementById('columnSettingsModal');
+ const overlay = document.getElementById('columnModalOverlay');
+
+ overlay.style.display = 'none';
+ modal.style.display = 'none';
+
+ if (sortable) {
+ sortable.destroy();
+ sortable = null;
+ }
+ }
+
+ // Apply column settings
+ function applyColumnSettings() {
+ const columnList = document.getElementById('columnList');
+ const items = columnList.querySelectorAll('.column-item');
+
+ // Get new order
+ const order = Array.from(items).map(item => item.getAttribute('data-column'));
+
+ // Get visible columns
+ const visible = [];
+ items.forEach(item => {
+ const colId = item.getAttribute('data-column');
+ const checkbox = item.querySelector('.column-checkbox');
+ if (checkbox.checked) {
+ visible.push(colId);
+ }
+ });
+
+ // Save settings
+ saveColumnSettings(visible, order);
+
+ // Apply to table
+ applyColumnOrder(order);
+ applyColumnVisibility(visible);
+
+ // Close modal
+ closeColumnSettings();
+ }
+
+ // Reset to default columns
+ function resetColumns() {
+ const defaultOrder = ALL_COLUMNS.map(c => c.id);
+ saveColumnSettings(DEFAULT_COLUMNS, defaultOrder);
+ applyColumnOrder(defaultOrder);
+ applyColumnVisibility(DEFAULT_COLUMNS);
+ closeColumnSettings();
+ }
+
+ // Initialize on page load
+ document.addEventListener('DOMContentLoaded', function() {
+ const settings = loadColumnSettings();
+ applyColumnOrder(settings.order);
+ applyColumnVisibility(settings.visible);
+ });
 </script>
+
+ <!-- Column Settings Modal -->
+ <div class="modal-overlay" id="columnModalOverlay" onclick="closeColumnSettings()"></div>
+ <div class="column-settings-modal" id="columnSettingsModal">
+ <div class="modal-header">
+ <h3>Настройка столбцов</h3>
+ <button onclick="closeColumnSettings()" style="background:none;border:none;font-size:24px;cursor:pointer;color:#666;">&times;</button>
+</div>
+ <div class="modal-body">
+ <ul class="column-list" id="columnList"></ul>
+ <div class="modal-actions">
+ <button class="btn-reset" onclick="resetColumns()">Сбросить</button>
+ <div class="modal-actions-right">
+ <button class="btn-cancel" onclick="closeColumnSettings()">Отмена</button>
+ <button class="btn-apply" onclick="applyColumnSettings()">Применить</button>
+</div>
+</div>
+</div>
+</div>
 </body>
 </html>
