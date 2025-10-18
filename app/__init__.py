@@ -2,11 +2,14 @@
 from contextlib import asynccontextmanager
 from pathlib import Path
 from datetime import datetime
-from fastapi import FastAPI, Request, UploadFile, File, HTTPException, Depends, Query
+from fastapi import FastAPI, Request, UploadFile, File, HTTPException, Depends, Query, Body
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
+from pydantic import BaseModel, Field
+from typing import Optional
 from app.logger import setup_logging, get_logger
 from app.db import engine, Base, get_db
 from app.db.models import Organization, OrganizationMetrics, OrganizationTaxes, OrganizationAssets, OrganizationProducts, OrganizationMeta
@@ -67,6 +70,41 @@ static_dir = Path(__file__).parent / "static"
 app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
 
 
+# Pydantic schema for organization creation
+class OrganizationCreate(BaseModel):
+    """Schema for creating a new organization."""
+    inn: str = Field(..., min_length=10, max_length=12, pattern=r"^\d{10,12}$")
+    name: str = Field(..., min_length=1, max_length=500)
+    full_name: Optional[str] = Field(None, max_length=1000)
+    status_spark: Optional[str] = Field(None, max_length=200)
+    status_internal: Optional[str] = Field(None, max_length=200)
+    status_final: Optional[str] = Field(None, max_length=200)
+    legal_address: Optional[str] = Field(None, max_length=1000)
+    production_address: Optional[str] = Field(None, max_length=1000)
+    additional_address: Optional[str] = Field(None, max_length=1000)
+    main_industry: Optional[str] = Field(None, max_length=200)
+    main_subindustry: Optional[str] = Field(None, max_length=200)
+    extra_industry: Optional[str] = Field(None, max_length=200)
+    extra_subindustry: Optional[str] = Field(None, max_length=200)
+    main_okved: Optional[str] = Field(None, max_length=100)
+    main_okved_name: Optional[str] = Field(None, max_length=200)
+    prod_okved: Optional[str] = Field(None, max_length=100)
+    prod_okved_name: Optional[str] = Field(None, max_length=200)
+    company_info: Optional[str] = None
+    company_size: Optional[str] = Field(None, max_length=100)
+    head_name: Optional[str] = Field(None, max_length=200)
+    parent_org_name: Optional[str] = Field(None, max_length=500)
+    parent_org_inn: Optional[str] = Field(None, max_length=12)
+    head_contacts: Optional[str] = Field(None, max_length=500)
+    head_email: Optional[str] = Field(None, max_length=200)
+    phone: Optional[str] = Field(None, max_length=100)
+    emergency_contact: Optional[str] = Field(None, max_length=500)
+    website: Optional[str] = Field(None, max_length=300)
+    email: Optional[str] = Field(None, max_length=200)
+    district: Optional[str] = Field(None, max_length=200)
+    region: Optional[str] = Field(None, max_length=200)
+
+
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
     """Root page."""
@@ -77,6 +115,12 @@ async def root(request: Request):
 async def upload_page(request: Request):
     """Upload page."""
     return templates.TemplateResponse("upload.html", {"request": request})
+
+
+@app.get("/organizations/create", response_class=HTMLResponse)
+async def create_organization_page(request: Request):
+    """Organization creation page."""
+    return templates.TemplateResponse("organization_create.html", {"request": request})
 
 
 @app.post("/upload")
@@ -135,6 +179,69 @@ async def upload_file(
             file_path.unlink()
         except Exception as e:
             logger.error("file_cleanup_failed", error=str(e))
+
+
+@app.post("/api/organizations")
+async def create_organization(
+    org_data: OrganizationCreate,
+    db: Session = Depends(get_db)
+):
+    """
+    Create a new organization manually.
+    """
+    try:
+        # Check if organization with this INN already exists
+        existing = db.query(Organization).filter(Organization.inn == org_data.inn).first()
+        if existing:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"ОШИБКА: Предприятие с ИНН {org_data.inn} уже существует в базе"
+            )
+        
+        # Create new organization
+        new_org = Organization(**org_data.model_dump())
+        db.add(new_org)
+        db.commit()
+        db.refresh(new_org)
+        
+        logger.info(
+            "organization_created_manually",
+            organization_id=new_org.id,
+            inn=new_org.inn,
+            name=new_org.name
+        )
+        
+        return JSONResponse(content={
+            "success": True,
+            "message": f"Предприятие '{new_org.name}' успешно создано",
+            "organization_id": new_org.id,
+            "inn": new_org.inn,
+            "name": new_org.name
+        })
+        
+    except IntegrityError as e:
+        db.rollback()
+        error_msg = str(e.orig)
+        
+        if 'unique constraint' in error_msg.lower() or 'duplicate key' in error_msg.lower():
+            user_message = f"ОШИБКА: Предприятие с ИНН {org_data.inn} уже существует"
+        else:
+            user_message = f"ОШИБКА: Нарушение целостности базы данных"
+        
+        logger.error("organization_creation_failed", error=error_msg)
+        raise HTTPException(status_code=400, detail=user_message)
+        
+    except HTTPException:
+        raise
+        
+    except Exception as e:
+        db.rollback()
+        error_msg = str(e)
+        logger.error("organization_creation_failed", error=error_msg)
+        raise HTTPException(
+            status_code=500, 
+            detail=f"ОШИБКА: Не удалось создать предприятие. {error_msg[:100]}"
+        )
 
 
 @app.get("/organizations", response_class=HTMLResponse)
