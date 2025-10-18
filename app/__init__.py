@@ -420,6 +420,22 @@ async def organization_analytics(
         for m in all_metrics
     ]
     
+    # Get taxes data
+    all_taxes = db.query(OrganizationTaxes).filter(
+        OrganizationTaxes.organization_id == organization_id
+    ).order_by(OrganizationTaxes.year).all()
+    
+    taxes_data = [
+        {
+            'year': t.year,
+            'total_taxes': float(t.total_taxes_moscow or 0),
+            'profit_tax': float(t.profit_tax or 0),
+            'property_tax': float(t.property_tax or 0),
+            'ndfl': float(t.ndfl or 0)
+        }
+        for t in all_taxes
+    ]
+    
     # Industry comparison
     industry_comparison = []
     if org.main_industry:
@@ -464,6 +480,7 @@ async def organization_analytics(
             "latest_metrics": latest_metrics or {},
             "all_metrics": all_metrics,
             "metrics_data": metrics_data,
+            "taxes_data": taxes_data,
             "revenue_trend": revenue_trend,
             "employees_trend": employees_trend,
             "industry_comparison": industry_comparison
