@@ -13,7 +13,7 @@ from typing import Optional
 from app.logger import setup_logging, get_logger
 from app.db import engine, Base, get_db
 from app.db.models import Organization, OrganizationMetrics, OrganizationTaxes, OrganizationAssets, OrganizationProducts, OrganizationMeta
-from app.services.excel_processor import process_excel_file
+from app.services.excel_processor_v2 import process_excel_file
 from app.services.excel_exporter import export_organizations_to_excel
 from app.services.fns_api import get_fns_service
 from config import settings, ensure_directories

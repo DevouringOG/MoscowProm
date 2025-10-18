@@ -18,12 +18,43 @@ from app.logger import get_logger
 logger = get_logger(__name__)
 
 
+def is_empty_value(value: Any) -> bool:
+    """Check if value is empty (None, empty string, or whitespace only)."""
+    if value is None:
+        return True
+    if isinstance(value, str):
+        return value.strip() == ''
+    return False
+
+
+def get_value(data: dict, column_name: str, parser_func=None) -> Any:
+    """
+    Get value from data dict and optionally parse it.
+    
+    Args:
+        data: Dictionary with column data
+        column_name: Name of the column
+        parser_func: Optional parser function (parse_float, parse_int, etc)
+    
+    Returns:
+        Parsed value or None if empty
+    """
+    value = data.get(column_name)
+    if is_empty_value(value):
+        return None
+    if parser_func:
+        return parser_func(value, column_name)
+    return value
+
+
 def parse_float(value: Any, column_name: str = None) -> Optional[float]:
     """Safely parse float value."""
-    if value is None or value == '':
+    if is_empty_value(value):
         return None
+    # Handle numeric 0 as valid value
     try:
-        return float(value)
+        result = float(value)
+        return result
     except (ValueError, TypeError):
         if column_name:
             raise ValueError(f"Столбец '{column_name}': не удалось преобразовать значение '{value}' в число")
@@ -32,10 +63,12 @@ def parse_float(value: Any, column_name: str = None) -> Optional[float]:
 
 def parse_int(value: Any, column_name: str = None) -> Optional[int]:
     """Safely parse integer value."""
-    if value is None or value == '':
+    if is_empty_value(value):
         return None
+    # Handle numeric 0 as valid value
     try:
-        return int(float(value))
+        result = int(float(value))
+        return result
     except (ValueError, TypeError):
         if column_name:
             raise ValueError(f"Столбец '{column_name}': не удалось преобразовать значение '{value}' в целое число")
@@ -267,12 +300,17 @@ def process_excel_file(file_path: Path, db: Session) -> Dict[str, Any]:
                         except (ValueError, TypeError):
                             raise ValueError(f"Столбец '{total_fot_col}': не удалось преобразовать значение '{total_fot_val}' в число")
                     
-                    # Parse Moscow FOT (multiple possible column names)
+                    # Parse Moscow FOT (multiple possible column names with different spacing)
                     moscow_fot = None
                     for msk_fot_col in [
+                        f'Фонд оплаты труда  сотрудников, работающих в Москве, тыс. руб {year}',
                         f'Фонд оплаты труда сотрудников, работающих в Москве, тыс. руб {year}',
+                        f'Фонд оплаты труда  сотрудников, работающих в Москве, тыс. руб. {year}',
+                        f'Фонд оплаты труда сотрудников, работающих в Москве, тыс. руб. {year}',
+                        f'Фонд оплаты труда  сотрудников, работающего в Москве, тыс. руб {year}',
                         f'Фонд оплаты труда сотрудников, работающего в Москве, тыс. руб {year}',
-                        f'Фонд оплаты труда сотрудников, работающего в Москве, тыс. руб. {year}'
+                        f'Фонд оплаты труда  сотрудников, работающего в Москве, тыс. руб. {year}',
+                        f'Фонд оплаты труда сотрудников, работающего в Москве, тыс. руб. {year}',
                     ]:
                         msk_fot_val = data.get(msk_fot_col)
                         if msk_fot_val not in (None, ''):
@@ -282,21 +320,27 @@ def process_excel_file(file_path: Path, db: Session) -> Dict[str, Any]:
                             except (ValueError, TypeError):
                                 raise ValueError(f"Столбец '{msk_fot_col}': не удалось преобразовать значение '{msk_fot_val}' в число")
                     
-                    # Parse average salary total
-                    avg_sal_col = f'Средняя з.п. всех сотрудников организации, тыс.руб. {year}'
-                    avg_sal_val = data.get(avg_sal_col)
+                    # Parse average salary total (check for spacing variations)
                     avg_salary_total = None
-                    if avg_sal_val not in (None, ''):
-                        try:
-                            avg_salary_total = float(avg_sal_val)
-                        except (ValueError, TypeError):
-                            raise ValueError(f"Столбец '{avg_sal_col}': не удалось преобразовать значение '{avg_sal_val}' в число")
+                    for avg_sal_col in [
+                        f'Средняя з.п. всех сотрудников организации,  тыс.руб. {year}',
+                        f'Средняя з.п. всех сотрудников организации, тыс.руб. {year}',
+                    ]:
+                        avg_sal_val = data.get(avg_sal_col)
+                        if avg_sal_val not in (None, ''):
+                            try:
+                                avg_salary_total = float(avg_sal_val)
+                                break
+                            except (ValueError, TypeError):
+                                raise ValueError(f"Столбец '{avg_sal_col}': не удалось преобразовать значение '{avg_sal_val}' в число")
                     
-                    # Parse average salary Moscow (multiple possible names)
+                    # Parse average salary Moscow (multiple possible names with different spacing)
                     avg_salary_moscow = None
                     for avg_msk_col in [
+                        f'Средняя з.п. сотрудников, работающих в Москве,  тыс.руб. {year}',
                         f'Средняя з.п. сотрудников, работающих в Москве, тыс.руб. {year}',
-                        f'Средняя з.п. сотрудников, работающих в Москве, тыс.руb. {year}'
+                        f'Средняя з.п. сотрудников, работающих в Москве,  тыс.руb. {year}',
+                        f'Средняя з.п. сотрудников, работающих в Москве, тыс.руb. {year}',
                     ]:
                         avg_msk_val = data.get(avg_msk_col)
                         if avg_msk_val not in (None, ''):
