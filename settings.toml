@@ -33,7 +33,7 @@ default_page_size = 50
 max_page_size = 1000
 
 [default.fns_api]
-api_key = "41adc9fde1524943415a702da4626be313423d2b"
+api_key = ""
 enabled = true
 timeout = 30
 
