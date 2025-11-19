@@ -4,7 +4,6 @@
 
 ---
 
-Demo - http://79.174.85.110:8000/organizations
 ## Запуск
 
 ### Предварительные требования
@@ -100,3 +99,4 @@ config.py               # Конфигурация Dynaconf
 settings.toml           # Настройки приложения
 docker-compose.yaml     # PostgreSQL контейнер
 ```
+
